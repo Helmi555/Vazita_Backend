@@ -1,5 +1,6 @@
 package com.example.vehicleinspection.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,8 +20,10 @@ public class TestController {
         this.dataSource = dataSource;
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/db")
     public String testDBConnection() throws SQLException {
+        System.out.println("Testttttttttttttttttttttttt");
         try (Connection conn = dataSource.getConnection()) {
             DatabaseMetaData metaData = conn.getMetaData();
             return "Connected to: " + metaData.getDatabaseProductName() +

@@ -1,6 +1,7 @@
 package com.example.vehicleinspection.util;
 
 import com.example.vehicleinspection.model.User;
+import com.example.vehicleinspection.model.enums.Role;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -40,7 +41,7 @@ public class JwtUtils {
         return Jwts.builder()
                 .setSubject(user.getUsername())
                 .claim("ID_CENTRE", user.getIdCentre())
-                .claim("ROLE", user.getCodGrp()) // e.g., ROLE_ADMIN
+                .claim("ROLE", Role.fromCode(user.getCodGrp())) // e.g., ROLE_ADMIN
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(key, SignatureAlgorithm.HS512) // Uses the correct key object
                 .compact();

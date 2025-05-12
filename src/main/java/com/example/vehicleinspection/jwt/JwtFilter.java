@@ -9,11 +9,16 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -31,13 +36,27 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String token = parseJwt(request);
         if (token != null && validateJwtToken(token)) {
+            String username = jwtUtils.extractUsername(token);
+            String role = jwtUtils.extractRoleFromJwtToken(token);
+
+            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
+
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(username, null, authorities);
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
             String idCentre = jwtUtils.extractIdCentreFromJwtToken(token);
-            RoutingDataSourceContext.setDataSource("local_" + idCentre);
+            RoutingDataSourceContext.setDataSource(idCentre);
         }
 
-        filterChain.doFilter(request, response);
-        RoutingDataSourceContext.clear();
+        try {
+            filterChain.doFilter(request, response);
+        } finally {
+            RoutingDataSourceContext.clear();
+        }
     }
+
 
     private String parseJwt(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
