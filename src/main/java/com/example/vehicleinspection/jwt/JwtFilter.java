@@ -24,9 +24,11 @@ import java.util.List;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
+    private final JwtBlacklistService jwtBlacklistService;
 
-    public JwtFilter(JwtUtils jwtUtils) {
+    public JwtFilter(JwtUtils jwtUtils, JwtBlacklistService jwtBlacklistService) {
         this.jwtUtils = jwtUtils;
+        this.jwtBlacklistService = jwtBlacklistService;
     }
 
     @Override
@@ -35,19 +37,27 @@ public class JwtFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
         String token = parseJwt(request);
-        if (token != null && validateJwtToken(token)) {
-            String username = jwtUtils.extractUsername(token);
-            String role = jwtUtils.extractRoleFromJwtToken(token);
 
-            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
+        if (token != null) {
+            if (jwtBlacklistService.isTokenBlacklisted(token)) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token is blacklisted");
+                return;
+            }
 
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(username, null, authorities);
+            if (validateJwtToken(token)) {
+                String username = jwtUtils.extractUsername(token);
+                String role = jwtUtils.extractRoleFromJwtToken(token);
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
 
-            String idCentre = jwtUtils.extractIdCentreFromJwtToken(token);
-            RoutingDataSourceContext.setDataSource(idCentre);
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(username, null, authorities);
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                String idCentre = jwtUtils.extractIdCentreFromJwtToken(token);
+                RoutingDataSourceContext.setDataSource(idCentre);
+            }
         }
 
         try {
