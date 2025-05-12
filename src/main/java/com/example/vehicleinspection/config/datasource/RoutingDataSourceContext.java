@@ -3,8 +3,8 @@ package com.example.vehicleinspection.config.datasource;
 public class RoutingDataSourceContext {
     private static final ThreadLocal<String> CONTEXT = new ThreadLocal<>();
 
-    public static void setDataSource(String idCentre) {
-        CONTEXT.set("local_" + idCentre);
+    public static void setDataSource(String key) {
+        CONTEXT.set(key);
     }
 
     public static String getDataSource() {

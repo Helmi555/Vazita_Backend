@@ -9,6 +9,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,18 +27,26 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
     private final JwtBlacklistService jwtBlacklistService;
+    private final static Logger logger = LoggerFactory.getLogger(JwtFilter.class);
 
     public JwtFilter(JwtUtils jwtUtils, JwtBlacklistService jwtBlacklistService) {
         this.jwtUtils = jwtUtils;
         this.jwtBlacklistService = jwtBlacklistService;
     }
 
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
+        String path=request.getRequestURI();
+        if (path.equals("/api/v1/auth/login") || path.equals("/api/v1/auth/logout")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         String token = parseJwt(request);
+        logger.info(">>> Incoming path={} parsedToken={}", request.getRequestURI(), token);
 
         if (token != null) {
             if (jwtBlacklistService.isTokenBlacklisted(token)) {
@@ -44,19 +54,24 @@ public class JwtFilter extends OncePerRequestFilter {
                 return;
             }
 
-            if (validateJwtToken(token)) {
+            try {
+                jwtUtils.validateJwtToken(token);
                 String username = jwtUtils.extractUsername(token);
                 String role = jwtUtils.extractRoleFromJwtToken(token);
+                String centreId = jwtUtils.extractIdCentreFromJwtToken(token);
 
-                List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
+                UsernamePasswordAuthenticationToken auth =
+                        new UsernamePasswordAuthenticationToken(
+                                username,
+                                null,
+                                List.of(new SimpleGrantedAuthority(role))
+                        );
+                SecurityContextHolder.getContext().setAuthentication(auth);
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(username, null, authorities);
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                String idCentre = jwtUtils.extractIdCentreFromJwtToken(token);
-                RoutingDataSourceContext.setDataSource(idCentre);
+                RoutingDataSourceContext.setDataSource(centreId);
+            } catch (JwtException ex) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT");
+                return;
             }
         }
 
@@ -66,7 +81,6 @@ public class JwtFilter extends OncePerRequestFilter {
             RoutingDataSourceContext.clear();
         }
     }
-
 
     private String parseJwt(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
@@ -87,7 +101,5 @@ public class JwtFilter extends OncePerRequestFilter {
             return false;
         }
     }
-
-
 
 }

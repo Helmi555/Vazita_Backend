@@ -2,7 +2,7 @@ package com.example.vehicleinspection.config.datasource;
 
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
-public class DynamicDataSource extends AbstractRoutingDataSource {
+public class DynamicRoutingDataSource extends AbstractRoutingDataSource {
     @Override
     protected Object determineCurrentLookupKey() {
         return RoutingDataSourceContext.getDataSource();

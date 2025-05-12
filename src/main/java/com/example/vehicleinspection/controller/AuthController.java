@@ -7,8 +7,11 @@ import com.example.vehicleinspection.jwt.JwtBlacklistService;
 import com.example.vehicleinspection.service.AuthService;
 import com.example.vehicleinspection.util.JwtUtils;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -26,18 +29,18 @@ public class AuthController {
 
     @PostMapping("/login")
     @Operation(summary = "User login endpoint", description = "Authenticates a user and returns a JWT token")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
         return ResponseEntity.ok(authService.login(loginRequest));
     }
 
     @Operation(summary ="user logout")
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> logout(@RequestHeader("Authorization") String authHeader) {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             jwtBlacklistService.blacklistToken(token);
-            return ResponseEntity.ok("Logged out successfully");
+            return ResponseEntity.ok(Map.of("data","Logged out successfully"));
         }
-        return ResponseEntity.badRequest().body("Invalid Authorization header");
+        return ResponseEntity.badRequest().build();
     }
 }
