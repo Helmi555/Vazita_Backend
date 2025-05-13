@@ -1,13 +1,13 @@
 package com.example.vehicleinspection.model.enums;
 
 public enum Role {
-     ROLE_ADMIN, ROLE_INSPECTOR, ROLE_ADJOINT;
+     ADMIN, INSPECTOR, ADJOINT;
 
-     public static Role fromCode(int code) {
+     public static Role fromCode(String code) {
           return switch (code) {
-               case 1 -> ROLE_ADMIN;
-               case 2 -> ROLE_INSPECTOR;
-               case 3 -> ROLE_ADJOINT;
+               case "001" -> ADMIN;
+               case "002" -> INSPECTOR;
+               case "003" -> ADJOINT;
                default -> throw new IllegalArgumentException("Invalid role code: " + code);
           };
      }

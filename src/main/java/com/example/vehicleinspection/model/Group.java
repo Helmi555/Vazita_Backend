@@ -8,18 +8,18 @@ import jakarta.persistence.*;
 @Table(name="GROUPE")
 public class Group {
     @Id
-    @Column(name = "COD_GRP",nullable = false,unique = true)
-    private Integer codGrp;
+    @Column(name = "COD_GRP",length = 3)
+    private String codGrp;
 
-    @Column(name = "DESIGNATION",nullable = false,unique = true)
+    @Column(name = "DESIGNATION",length = 100)
     @Enumerated(EnumType.STRING)
     private Role designation;
 
-    public Integer getCodGrp() {
+    public String getCodGrp() {
         return codGrp;
     }
 
-    public void setCodGrp(Integer codGrp) {
+    public void setCodGrp(String codGrp) {
         this.codGrp = codGrp;
     }
 
@@ -31,7 +31,7 @@ public class Group {
         this.designation = designation;
     }
 
-    public Group(Integer codGrp, Role designation) {
+    public Group(String codGrp, Role designation) {
         this.codGrp = codGrp;
         this.designation = designation;
     }

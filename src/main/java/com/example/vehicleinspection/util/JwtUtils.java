@@ -2,11 +2,14 @@ package com.example.vehicleinspection.util;
 
 import com.example.vehicleinspection.model.User;
 import com.example.vehicleinspection.model.enums.Role;
+import com.example.vehicleinspection.service.Impl.AuthServiceImpl;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +19,7 @@ import javax.crypto.SecretKey;
 
 @Component
 public class JwtUtils {
+    private final static Logger logger= LoggerFactory.getLogger(AuthServiceImpl.class);
 
     @Value("${app.jwt.secret}")
     private String secret;
@@ -38,10 +42,12 @@ public class JwtUtils {
     }
 
     public String generateJwtToken(User user) {
+
+        logger.info("token  {}",Role.fromCode(user.getCodGrp()));
         return Jwts.builder()
                 .setSubject(user.getUsername())
                 .claim("ID_CENTRE", user.getIdCentre())
-                .claim("ROLE", Role.fromCode(user.getCodGrp())) // e.g., ROLE_ADMIN
+                .claim("ROLE","ROLE_"+ Role.fromCode(user.getCodGrp()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(key, SignatureAlgorithm.HS512) // Uses the correct key object
                 .compact();

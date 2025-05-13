@@ -10,8 +10,7 @@ import com.example.vehicleinspection.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,18 +22,19 @@ public class DataSeeder {
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
     private final CentreCVTRepository centreCVTRepository;
-    private final PasswordEncoder passwordEncoder;
+    private  final JdbcTemplate jdbcTemplate;
 
-    public DataSeeder(GroupRepository groupRepository, UserRepository userRepository, CentreCVTRepository centreCVTRepository, PasswordEncoder passwordEncoder) {
+    public DataSeeder(GroupRepository groupRepository, UserRepository userRepository, CentreCVTRepository centreCVTRepository , JdbcTemplate jdbcTemplate) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.centreCVTRepository = centreCVTRepository;
-        this.passwordEncoder = passwordEncoder;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Bean
     public CommandLineRunner seedDb() {
         return args -> {
+            ensureTableExists();
             seedRoles();
             seedCentres();
             seedUsers();
@@ -44,9 +44,9 @@ public class DataSeeder {
     private void seedRoles() {
         if (groupRepository.count() == 0) {
             groupRepository.saveAll(List.of(
-                    new Group(1, Role.ROLE_ADMIN),
-                    new Group(2, Role.ROLE_INSPECTOR),
-                    new Group(3, Role.ROLE_ADJOINT)
+                    new Group("001", Role.ADMIN),
+                    new Group("002", Role.INSPECTOR),
+                    new Group("003", Role.ADJOINT)
             ));
         }
     }
@@ -54,48 +54,101 @@ public class DataSeeder {
     private void seedCentres() {
         if (centreCVTRepository.count() == 0) {
             centreCVTRepository.saveAll(List.of(
-                    new CentreCVT(1, "admin", "pass", "localhost", "cvtx1"),
-                    new CentreCVT(2, "admin", "pass", "localhost", "cvtx2"),
-                    new CentreCVT(3, "admin", "pass", "localhost", "cvtx3")
+                    new CentreCVT(10, "admin", "pass", "localhost", "cvtx1"),
+                    new CentreCVT(20, "admin", "pass", "localhost", "cvtx2"),
+                    new CentreCVT(30, "admin", "pass", "localhost", "cvtx3")
             ));
         }
     }
 
     private void seedUsers() {
         if (userRepository.count() == 0) {
-            String encodedPassword = passwordEncoder.encode("password");
 
             userRepository.saveAll(List.of(
                     new User(
-                            null,
+                            "1111",
                             "admin",
-                            encodedPassword,
-                            "Admin",
-                            "User",
+                            "nour123@",
+                            "NOUR",
+                            "MAAYOUFI",
                             "أدمين",
                             "مستخدم",
                             LocalDate.now(),
                             LocalDate.now().plusYears(1),
-                            true,
-                            1, // ROLE_ADMIN
-                            1  // ID_CENTRE 1
+                            "E",
+                            "001", // ADMIN
+                            10  // ID_CENTRE 1
                     ),
                     new User(
-                            null,
+                            "1112",
                             "inspector",
-                            encodedPassword,
-                            "Inspecteur",
-                            "Test",
+                            "mohammed123@",
+                            "MOHAMMED",
+                            "ORIL",
                             "مُفتش",
                             "تجربة",
                             LocalDate.now(),
                             LocalDate.now().plusYears(1),
-                            true,
-                            2, // ROLE_INSPECTOR
-                            2  // ID_CENTRE 2
+                            "A",
+                            "002", // INSPECTOR
+                            20  // ID_CENTRE 2
                     )
             ));
 
+
+
         }
     }
+    private void ensureTableExists() {
+        Integer groupeCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'GROUPE'",
+                Integer.class
+        );
+        if (groupeCount == null || groupeCount == 0) {
+            jdbcTemplate.execute("CREATE TABLE GROUPE ("
+                    + "COD_GRP VARCHAR(3) PRIMARY KEY, "
+                    + "DESIGNATION VARCHAR(100) NOT NULL UNIQUE"
+                    + ");");
+        }
+
+        Integer utilisateursCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'UTILISATEURS'",
+                Integer.class
+        );
+        if (utilisateursCount == null || utilisateursCount == 0) {
+            jdbcTemplate.execute(
+                    "CREATE TABLE UTILISATEURS ("
+                            + "ID_USER VARCHAR(100) PRIMARY KEY, "
+                            + "USERNAME VARCHAR(100) UNIQUE NOT NULL, "
+                            + "PASSE VARCHAR(100) NOT NULL, "
+                            + "PRENOM VARCHAR(100), "
+                            + "NOM VARCHAR(100), "
+                            + "PRENOMA VARCHAR(100), "
+                            + "NOMA VARCHAR(100), "
+                            + "DATE_DEB DATE, "
+                            + "DATE_FIN DATE, "
+                            + "ETAT CHAR(1) NOT NULL, "
+                            + "COD_GRP VARCHAR(3) NOT NULL, "
+                            + "ID_CENTRE INT NOT NULL"
+                            + ");"
+            );
+        }
+
+        Integer centreCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'CENTRE_CVT'",
+                Integer.class
+        );
+        if (centreCount == null || centreCount == 0) {
+            jdbcTemplate.execute(
+                    "CREATE TABLE CENTRE_CVT ("
+                            + "ID_CENTRE INT PRIMARY KEY, "
+                            + "USERNAME VARCHAR(50) NOT NULL, "
+                            + "PASSWORD VARCHAR(50) NOT NULL, "
+                            + "MACHINE VARCHAR(100), "
+                            + "SID VARCHAR(100)"
+                            + ");"
+            );
+        }
+    }
+
 }

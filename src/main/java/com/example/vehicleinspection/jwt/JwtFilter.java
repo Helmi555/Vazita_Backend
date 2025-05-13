@@ -40,11 +40,16 @@ public class JwtFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
-        String path=request.getRequestURI();
-        if (path.equals("/api/v1/auth/login") || path.equals("/api/v1/auth/logout")) {
+
+        String path = request.getRequestURI();
+        logger.info(">>> Incoming path={}", path);
+        if (path.equals("/api/v1/auth/login") ||
+                path.equals("/api/v1/auth/logout") ) {
+
             filterChain.doFilter(request, response);
             return;
         }
+
         String token = parseJwt(request);
         logger.info(">>> Incoming path={} parsedToken={}", request.getRequestURI(), token);
 
@@ -68,7 +73,11 @@ public class JwtFilter extends OncePerRequestFilter {
                         );
                 SecurityContextHolder.getContext().setAuthentication(auth);
 
-                RoutingDataSourceContext.setDataSource(centreId);
+                // ❗Only route for paths other than /user
+                if (!path.equals("/api/v1/user")) {
+                    RoutingDataSourceContext.setDataSource(centreId);
+                }
+
             } catch (JwtException ex) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT");
                 return;
@@ -81,6 +90,7 @@ public class JwtFilter extends OncePerRequestFilter {
             RoutingDataSourceContext.clear();
         }
     }
+
 
     private String parseJwt(HttpServletRequest request) {
         String header = request.getHeader("Authorization");

@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/login",
+                        .requestMatchers("/api/v1/auth/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**" ,"/api/v1/test").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasAuthority("ADMIN")
@@ -41,8 +41,5 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12);
-    }
+
 }

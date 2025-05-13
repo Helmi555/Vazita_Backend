@@ -16,39 +16,44 @@ public class DataSourceConfig {
 
     @Bean
     @ConfigurationProperties("spring.datasource.central")
-    public DataSourceProperties centralDataSourceProperties() {
+    public DataSourceProperties centralProps() {
         return new DataSourceProperties();
+    }
+
+    @Bean(name="centralDataSource")
+    public DataSource centralDataSource() {
+        return centralProps().initializeDataSourceBuilder().build();
     }
 
     @Bean
-    @ConfigurationProperties("spring.datasource.local")
-    public DataSourceProperties localDataSourceProperties() {
-        return new DataSourceProperties();
+    @ConfigurationProperties("spring.datasource.local1")
+    public DataSourceProperties local1Props() { return new DataSourceProperties(); }
+    @Bean(name="local1DataSource")
+    public DataSource local1DataSource() {
+        return local1Props().initializeDataSourceBuilder().build();
     }
 
-    @Bean(name = "centralDataSource")
-    public DataSource centralDataSource() {
-        return centralDataSourceProperties()
-                .initializeDataSourceBuilder()
-                .build();
-    }
-
-    @Bean(name = "localDataSource")
-    public DataSource localDataSource() {
-        return localDataSourceProperties()
-                .initializeDataSourceBuilder()
-                .build();
+    @Bean
+    @ConfigurationProperties("spring.datasource.local2")
+    public DataSourceProperties local2Props() { return new DataSourceProperties(); }
+    @Bean(name="local2DataSource")
+    public DataSource local2DataSource() {
+        return local2Props().initializeDataSourceBuilder().build();
     }
 
     @Bean
     @Primary
-    public DataSource routingDataSource(@Qualifier("centralDataSource") DataSource central,
-                                        @Qualifier("localDataSource") DataSource local) {
+    public DataSource routingDataSource(
+            @Qualifier("centralDataSource") DataSource central,
+            @Qualifier("local1DataSource") DataSource l1,
+            @Qualifier("local2DataSource") DataSource l2) {
+
         DynamicRoutingDataSource routing = new DynamicRoutingDataSource();
-        Map<Object, Object> sources = new HashMap<>();
-        sources.put("CENTRAL", central);
-        sources.put("1", local); // centre ID 1 => localDataSource
-        routing.setTargetDataSources(sources);
+        Map<Object,Object> map = new HashMap<>();
+        map.put("CENTRAL", central);
+        map.put("10",       l1);
+        map.put("20",       l2);
+        routing.setTargetDataSources(map);
         routing.setDefaultTargetDataSource(central);
         return routing;
     }

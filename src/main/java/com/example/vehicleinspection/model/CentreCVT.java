@@ -14,10 +14,10 @@ public class CentreCVT {
     @Column(name = "ID_CENTRE")
     private Integer idCentre;
 
-    @Column(name = "USERNAME")
+    @Column(name = "USERNAME",nullable = false, length = 50)
     private String username;
 
-    @Column(name = "PASSWORD")
+    @Column(name = "PASSWORD",nullable = false, length = 50)
     private String password;
 
     @Column(name = "MACHINE")

@@ -9,26 +9,25 @@ import java.util.UUID;
 @Table(name = "UTILISATEURS")
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "ID_USER")
-    private UUID idUser;
+    @Column(name = "ID_USER", length = 100)
+    private String idUser;
 
     @Column(name="USERNAME",unique = true,nullable = false)
     private String username;
 
-    @Column(name = "PASSEWORD",nullable = false)
+    @Column(name = "PASSE",nullable = false,length = 100)
     private String password;
 
-    @Column(name = "PRENOM")
+    @Column(name = "PRENOM",length = 100)
     private String firstName;
 
-    @Column(name = "NOM")
+    @Column(name = "NOM",length = 100)
     private String lastName;
 
-    @Column(name = "PRENOMA")
+    @Column(name = "PRENOMA",length = 100)
     private String firstNameA;
 
-    @Column(name = "NOMA")
+    @Column(name = "NOMA",length = 100)
     private String lastNameA;
 
     @Column(name = "DATE_DEB")
@@ -37,23 +36,38 @@ public class User {
     @Column(name = "DATE_FIN")
     private LocalDate endDate;
 
-    @Column(name = "ETAT")
-    private Boolean status;
+    @Column(name = "ETAT", nullable = false,length = 1)
+    private String status;
 
-    @Column(name = "COD_GRP")
-    private Integer codGrp;
+    @Column(name = "COD_GRP",nullable = false,length = 3)
+    private String codGrp;
 
-    @Column(name = "ID_CENTRE" )
+    @Column(name = "ID_CENTRE" ,nullable = false)
     private Integer idCentre;
 
     public User() {
     }
 
-    public UUID getIdUser() {
+    public User(String idUser, String username, String password, String firstName, String lastName, String firstNameA, String lastNameA, LocalDate startDate, LocalDate endDate, String status, String codGrp, Integer idCentre) {
+        this.idUser = idUser;
+        this.username = username;
+        this.password = password;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.firstNameA = firstNameA;
+        this.lastNameA = lastNameA;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.status = status;
+        this.codGrp = codGrp;
+        this.idCentre = idCentre;
+    }
+
+    public String getIdUser() {
         return idUser;
     }
 
-    public void setIdUser(UUID idUser) {
+    public void setIdUser(String idUser) {
         this.idUser = idUser;
     }
 
@@ -121,35 +135,19 @@ public class User {
         this.endDate = endDate;
     }
 
-    public Boolean getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(Boolean status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 
-
-    public User(UUID idUser, String username, String password, String firstName, String lastName, String firstNameA, String lastNameA, LocalDate startDate, LocalDate endDate, Boolean status, Integer codGrp, Integer idCentre) {
-        this.idUser = idUser;
-        this.username = username;
-        this.password = password;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.firstNameA = firstNameA;
-        this.lastNameA = lastNameA;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.status = status;
-        this.codGrp = codGrp;
-        this.idCentre = idCentre;
-    }
-
-    public Integer getCodGrp() {
+    public String getCodGrp() {
         return codGrp;
     }
 
-    public void setCodGrp(Integer codGrp) {
+    public void setCodGrp(String codGrp) {
         this.codGrp = codGrp;
     }
 
@@ -160,4 +158,9 @@ public class User {
     public void setIdCentre(Integer idCentre) {
         this.idCentre = idCentre;
     }
+
+    public boolean isValid() {
+        return "E".equals(this.status);
+    }
+
 }

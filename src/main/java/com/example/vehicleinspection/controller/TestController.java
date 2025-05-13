@@ -37,7 +37,7 @@ public class TestController {
         }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','INSPECTOR')")
     @GetMapping("/db-query")
     public ResponseEntity<?> testDBQuery() throws SQLException {
         System.out.println("QUERyyyyyyyyyy");
