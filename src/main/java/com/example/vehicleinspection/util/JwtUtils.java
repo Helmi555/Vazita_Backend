@@ -57,8 +57,8 @@ public class JwtUtils {
         return jwtParser.parseClaimsJws(token).getBody().getSubject();
     }
 
-    public String extractIdCentreFromJwtToken(String token) {
-        return jwtParser.parseClaimsJws(token).getBody().get("ID_CENTRE").toString();
+    public Integer extractIdCentreFromJwtToken(String token) {
+        return Integer.parseInt(jwtParser.parseClaimsJws(token).getBody().get("ID_CENTRE").toString());
     }
 
     public String extractRoleFromJwtToken(String token) {

@@ -1,6 +1,8 @@
 package com.example.vehicleinspection.jwt;
 
 
+//import com.example.vehicleinspection.config.datasource.RoutingDataSourceContext;
+import com.example.vehicleinspection.config.datasource.DataSourceManager;
 import com.example.vehicleinspection.config.datasource.RoutingDataSourceContext;
 import com.example.vehicleinspection.util.JwtUtils;
 import io.jsonwebtoken.JwtException;
@@ -24,16 +26,14 @@ import java.util.List;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
-
     private final JwtUtils jwtUtils;
-    private final JwtBlacklistService jwtBlacklistService;
+    private final DataSourceManager dataSourceManager;
     private final static Logger logger = LoggerFactory.getLogger(JwtFilter.class);
 
-    public JwtFilter(JwtUtils jwtUtils, JwtBlacklistService jwtBlacklistService) {
+    public JwtFilter(JwtUtils jwtUtils, DataSourceManager dataSourceManager) {
         this.jwtUtils = jwtUtils;
-        this.jwtBlacklistService = jwtBlacklistService;
+        this.dataSourceManager = dataSourceManager;
     }
-
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -42,29 +42,20 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getRequestURI();
-        logger.info(">>> Incoming path={}", path);
-        if (path.equals("/api/v1/auth/login") ||
-                path.equals("/api/v1/auth/logout") ) {
-
+        if (path.equals("/api/v1/auth/login") || path.equals("/api/v1/auth/logout")) {
             filterChain.doFilter(request, response);
             return;
         }
 
         String token = parseJwt(request);
-        logger.info(">>> Incoming path={} parsedToken={}", request.getRequestURI(), token);
-
         if (token != null) {
-            if (jwtBlacklistService.isTokenBlacklisted(token)) {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token is blacklisted");
-                return;
-            }
-
             try {
                 jwtUtils.validateJwtToken(token);
                 String username = jwtUtils.extractUsername(token);
                 String role = jwtUtils.extractRoleFromJwtToken(token);
-                String centreId = jwtUtils.extractIdCentreFromJwtToken(token);
+                Integer centreId = jwtUtils.extractIdCentreFromJwtToken(token);
 
+                // Set auth context
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
                                 username,
@@ -73,12 +64,10 @@ public class JwtFilter extends OncePerRequestFilter {
                         );
                 SecurityContextHolder.getContext().setAuthentication(auth);
 
-                // ❗Only route for paths other than /user
-                if (!path.equals("/api/v1/user")) {
-                    RoutingDataSourceContext.setDataSource(centreId);
-                }
+                // Dynamic routing
+                dataSourceManager.ensureDataSource(centreId.toString());
 
-            } catch (JwtException ex) {
+            } catch (Exception ex) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT");
                 return;
             }
@@ -91,7 +80,6 @@ public class JwtFilter extends OncePerRequestFilter {
         }
     }
 
-
     private String parseJwt(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
@@ -99,17 +87,4 @@ public class JwtFilter extends OncePerRequestFilter {
         }
         return null;
     }
-
-    private boolean validateJwtToken(String token) {
-        try {
-            Jwts.parserBuilder()
-                    .setSigningKey(jwtUtils.getSecret().getBytes(StandardCharsets.UTF_8))
-                    .build()
-                    .parseClaimsJws(token);
-            return true;
-        } catch (JwtException ex) {
-            return false;
-        }
-    }
-
 }

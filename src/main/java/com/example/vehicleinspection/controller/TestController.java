@@ -27,7 +27,7 @@ public class TestController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/db")
     public String testDBConnection() throws SQLException {
-        System.out.println("Testttttttttttttttttttttttt");
+        //System.out.println("Testttttttttttttttttttttttt");
         try (Connection conn = dataSource.getConnection()) {
             DatabaseMetaData metaData = conn.getMetaData();
             return "Connected to: " + metaData.getDatabaseProductName() +
@@ -40,7 +40,7 @@ public class TestController {
     @PreAuthorize("hasAnyRole('ADMIN','INSPECTOR')")
     @GetMapping("/db-query")
     public ResponseEntity<?> testDBQuery() throws SQLException {
-        System.out.println("QUERyyyyyyyyyy");
+       // System.out.println("QUERyyyyyyyyyy");
         return ResponseEntity.ok(testRepository.findAll());
     }
 
