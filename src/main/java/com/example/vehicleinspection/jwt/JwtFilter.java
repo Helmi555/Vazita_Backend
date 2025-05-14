@@ -19,19 +19,22 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
+
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtils jwtUtils;
+    private final JwtBlacklistService jwtBlacklistService;
     private final DataSourceManager dataSourceManager;
-    private final static Logger logger = LoggerFactory.getLogger(JwtFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(JwtFilter.class);
 
-    public JwtFilter(JwtUtils jwtUtils, DataSourceManager dataSourceManager) {
+    public JwtFilter(JwtUtils jwtUtils,
+                     JwtBlacklistService jwtBlacklistService,
+                     DataSourceManager dataSourceManager) {
         this.jwtUtils = jwtUtils;
+        this.jwtBlacklistService = jwtBlacklistService;
         this.dataSourceManager = dataSourceManager;
     }
 
@@ -46,16 +49,20 @@ public class JwtFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-
         String token = parseJwt(request);
         if (token != null) {
+            if (jwtBlacklistService.isTokenBlacklisted(token)) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "JWT token is blacklisted");
+                return;
+            }
+
             try {
                 jwtUtils.validateJwtToken(token);
+
                 String username = jwtUtils.extractUsername(token);
                 String role = jwtUtils.extractRoleFromJwtToken(token);
                 Integer centreId = jwtUtils.extractIdCentreFromJwtToken(token);
 
-                // Set auth context
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
                                 username,
@@ -64,10 +71,9 @@ public class JwtFilter extends OncePerRequestFilter {
                         );
                 SecurityContextHolder.getContext().setAuthentication(auth);
 
-                // Dynamic routing
                 dataSourceManager.ensureDataSource(centreId.toString());
 
-            } catch (Exception ex) {
+            } catch (JwtException ex) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT");
                 return;
             }

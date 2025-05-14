@@ -89,7 +89,7 @@ public class DataSeeder {
                             "تجربة",
                             LocalDate.now(),
                             LocalDate.now().plusYears(1),
-                            "A",
+                            "E",
                             "002", // INSPECTOR
                             20  // ID_CENTRE 2
                     )
