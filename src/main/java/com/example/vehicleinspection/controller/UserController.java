@@ -28,7 +28,7 @@ public class UserController {
     @GetMapping("")
     public ResponseEntity<?> getUser(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
-        String username= jwtUtils.extractUsername(token);
+        String username= jwtUtils.extractIdUser(token);
         if(username == null || username.isBlank()) {
             return ResponseEntity.badRequest().build();
         }

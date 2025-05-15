@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse getUser(String username) {
-        User user = userRepository.findByUsername(username).orElseThrow(
+        User user = userRepository.findById(username).orElseThrow(
                 () -> new RuntimeException("User not found")
         );
         Group group = groupRepository.findById(user.getCodGrp()).orElseThrow(

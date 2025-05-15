@@ -8,7 +8,6 @@ import java.time.LocalDate;
 public class UserResponse {
 
     private String idUser;
-    private String username;
     private String firstName;
     private String lastName;
     private String firstNameA;
@@ -27,13 +26,7 @@ public class UserResponse {
         this.idUser = idUser;
     }
 
-    public String getUsername() {
-        return username;
-    }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
 
     public String getFirstName() {
         return firstName;
@@ -107,9 +100,8 @@ public class UserResponse {
         this.idCentre = idCentre;
     }
 
-    public UserResponse(String idUser, String username, String firstName, String lastName, String firstNameA, String lastNameA, LocalDate startDate, LocalDate endDate, String status, String designation, Integer idCentre) {
+    public UserResponse(String idUser, String firstName, String lastName, String firstNameA, String lastNameA, LocalDate startDate, LocalDate endDate, String status, String designation, Integer idCentre) {
         this.idUser = idUser;
-        this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
         this.firstNameA = firstNameA;
@@ -127,7 +119,6 @@ public class UserResponse {
     public static UserResponse userToResponseDto(User user) {
         return new UserResponse(
                 user.getIdUser(),
-                user.getUsername(),
                 user.getFirstName(),
                 user.getLastName(),
                 user.getFirstNameA(),

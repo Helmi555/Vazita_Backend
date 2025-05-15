@@ -4,25 +4,25 @@ import jakarta.validation.constraints.NotBlank;
 
 public class LoginRequest {
 
-    @NotBlank(message = "Username is necessary")
-    private String username;
+    @NotBlank(message = "Id is necessary")
+    private String id;
     @NotBlank(message = "Password is necessary")
     private String password;
 
-    public LoginRequest(String username, String password) {
-        this.username = username;
+    public LoginRequest(String id, String password) {
+        this.id = id;
         this.password = password;
     }
 
     public LoginRequest() {
     }
 
-    public String getUsername() {
-        return username;
+    public String getId() {
+        return id;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getPassword() {

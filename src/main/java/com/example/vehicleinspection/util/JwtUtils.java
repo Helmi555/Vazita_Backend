@@ -45,7 +45,7 @@ public class JwtUtils {
 
         logger.info("token  {}",Role.fromCode(user.getCodGrp()));
         return Jwts.builder()
-                .setSubject(user.getUsername())
+                .setSubject(user.getIdUser())
                 .claim("ID_CENTRE", user.getIdCentre())
                 .claim("ROLE","ROLE_"+ Role.fromCode(user.getCodGrp()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
@@ -53,7 +53,7 @@ public class JwtUtils {
                 .compact();
     }
 
-    public String extractUsername(String token) {
+    public String extractIdUser(String token) {
         return jwtParser.parseClaimsJws(token).getBody().getSubject();
     }
 

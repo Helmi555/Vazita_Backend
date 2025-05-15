@@ -67,7 +67,6 @@ public class DataSeeder {
             userRepository.saveAll(List.of(
                     new User(
                             "1111",
-                            "admin",
                             "nour123@",
                             "NOUR",
                             "MAAYOUFI",
@@ -81,7 +80,6 @@ public class DataSeeder {
                     ),
                     new User(
                             "1112",
-                            "inspector",
                             "mohammed123@",
                             "MOHAMMED",
                             "ORIL",
@@ -115,7 +113,6 @@ public class DataSeeder {
             jdbcTemplate.execute(
                     "CREATE TABLE UTILISATEURS ("
                             + "ID_USER VARCHAR2(100) PRIMARY KEY, "
-                            + "USERNAME VARCHAR2(100) UNIQUE NOT NULL, "
                             + "PASSE VARCHAR2(100) NOT NULL, "
                             + "PRENOM VARCHAR2(100), "
                             + "NOM VARCHAR2(100), "

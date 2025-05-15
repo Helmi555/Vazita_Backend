@@ -12,8 +12,6 @@ public class User {
     @Column(name = "ID_USER", length = 100)
     private String idUser;
 
-    @Column(name="USERNAME",unique = true,nullable = false)
-    private String username;
 
     @Column(name = "PASSE",nullable = false,length = 100)
     private String password;
@@ -48,9 +46,8 @@ public class User {
     public User() {
     }
 
-    public User(String idUser, String username, String password, String firstName, String lastName, String firstNameA, String lastNameA, LocalDate startDate, LocalDate endDate, String status, String codGrp, Integer idCentre) {
+    public User(String idUser, String password, String firstName, String lastName, String firstNameA, String lastNameA, LocalDate startDate, LocalDate endDate, String status, String codGrp, Integer idCentre) {
         this.idUser = idUser;
-        this.username = username;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -71,13 +68,6 @@ public class User {
         this.idUser = idUser;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
 
     public String getPassword() {
         return password;

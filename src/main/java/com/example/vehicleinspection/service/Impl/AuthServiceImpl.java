@@ -36,8 +36,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
-        User user =userRepository.findByUsername(loginRequest.getUsername()).orElseThrow(
-                ()->new UsernameNotFoundException("Username not found")
+        User user =userRepository.findById(loginRequest.getId()).orElseThrow(
+                ()->new UsernameNotFoundException("User not found")
         );
 
         if(!user.isValid()){
@@ -59,7 +59,7 @@ public class AuthServiceImpl implements AuthService {
         logger.info("Token created is {}",token);
         LoginResponse loginResponse=new LoginResponse(
                 token,
-                user.getUsername(),
+                user.getIdUser(),
                 centreCVT.getIdCentre(),
                 group.getDesignation()
         );

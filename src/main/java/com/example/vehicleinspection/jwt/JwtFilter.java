@@ -59,7 +59,7 @@ public class JwtFilter extends OncePerRequestFilter {
             try {
                 jwtUtils.validateJwtToken(token);
 
-                String username = jwtUtils.extractUsername(token);
+                String username = jwtUtils.extractIdUser(token);
                 String role = jwtUtils.extractRoleFromJwtToken(token);
                 Integer centreId = jwtUtils.extractIdCentreFromJwtToken(token);
 
