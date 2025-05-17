@@ -1,5 +1,6 @@
 package com.example.vehicleinspection.service.Impl;
 
+import com.example.vehicleinspection.dto.request.UserRequest;
 import com.example.vehicleinspection.dto.response.UserResponse;
 import com.example.vehicleinspection.model.CentreCVT;
 import com.example.vehicleinspection.model.Group;
@@ -43,6 +44,40 @@ public class UserServiceImpl implements UserService {
                 () -> new UsernameNotFoundException("Centre CVT not found")
         );
         return UserResponse.userToResponseDto(user);
+    }
+
+    @Override
+    public void createUser(UserRequest userRequest) {
+        if(userRepository.existsById(userRequest.getIdUser())){
+            throw new UsernameNotFoundException("User already exists in system");
+        }
+        if(!groupRepository.existsById(userRequest.getCodGrp())){
+            throw new UsernameNotFoundException("Group does not exist in system");
+        }
+        if(!centreCVTRepository.existsById(userRequest.getIdCentre())){
+            throw new UsernameNotFoundException("Centre does not exist in system");
+        }
+
+        logger.info("User to be saved : " + userRequest);
+
+        User user = new User(
+                userRequest.getIdUser(),
+                userRequest.getPassword(),
+                userRequest.getFirstName(),
+                userRequest.getLastName(),
+                userRequest.getFirstNameA(),
+                userRequest.getLastNameA(),
+                userRequest.getStartDate(),
+                userRequest.getEndDate(),
+                userRequest.getStatus(),
+                userRequest.getCodGrp(),
+                userRequest.getIdCentre()
+        );
+
+        user=userRepository.save(user);
+
+
+        logger.info("User to saved : " + user);
     }
 
 }

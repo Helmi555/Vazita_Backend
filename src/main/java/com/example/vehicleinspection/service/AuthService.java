@@ -7,4 +7,7 @@ public interface AuthService {
     LoginResponse login(LoginRequest loginRequest);
 
     void logout(String username, String token);
+
+    interface DossierDefautService {
+    }
 }

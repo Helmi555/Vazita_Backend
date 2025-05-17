@@ -14,7 +14,7 @@ public class UserResponse {
     private String lastNameA;
     private LocalDate startDate;
     private LocalDate endDate;
-    private String status; // Updated: derived from status
+    private String status;
     private String designation;
     private Integer idCentre;
 

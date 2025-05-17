@@ -1,44 +1,132 @@
 package com.example.vehicleinspection.config;
 
-import com.example.vehicleinspection.model.CentreCVT;
-import com.example.vehicleinspection.model.Group;
-import com.example.vehicleinspection.model.User;
+import com.example.vehicleinspection.config.datasource.DataSourceManager;
+import com.example.vehicleinspection.config.datasource.RoutingDataSourceContext;
+import com.example.vehicleinspection.model.*;
 import com.example.vehicleinspection.model.enums.Role;
-import com.example.vehicleinspection.repository.CentreCVTRepository;
-import com.example.vehicleinspection.repository.GroupRepository;
-import com.example.vehicleinspection.repository.UserRepository;
+import com.example.vehicleinspection.model.keys.DossierDefautId;
+import com.example.vehicleinspection.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
-@Configuration
+//@Configuration
 public class DataSeeder {
 
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
     private final CentreCVTRepository centreCVTRepository;
-    private  final JdbcTemplate jdbcTemplate;
 
-    public DataSeeder(GroupRepository groupRepository, UserRepository userRepository, CentreCVTRepository centreCVTRepository , JdbcTemplate jdbcTemplate) {
+    private final ChapitreRepository chapitreRepository;
+    private final PointDefautRepository pointDefautRepository;
+    private final AlterationRepository alterationRepository;
+    private final DossierRepository dossierRepository;
+    private final DossierDefautRepository dossierDefautRepository;
+
+    private final JdbcTemplate jdbcTemplate;
+    private final DataSourceManager dataSourceManager;
+
+    public DataSeeder(
+            GroupRepository groupRepository,
+            UserRepository userRepository,
+            CentreCVTRepository centreCVTRepository,
+            ChapitreRepository chapitreRepository,
+            PointDefautRepository pointDefautRepository,
+            AlterationRepository alterationRepository,
+            DossierRepository dossierRepository,
+            DossierDefautRepository dossierDefautRepository,
+            JdbcTemplate jdbcTemplate,
+            DataSourceManager dataSourceManager
+    ) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.centreCVTRepository = centreCVTRepository;
+        this.chapitreRepository = chapitreRepository;
+        this.pointDefautRepository = pointDefautRepository;
+        this.alterationRepository = alterationRepository;
+        this.dossierRepository = dossierRepository;
+        this.dossierDefautRepository = dossierDefautRepository;
         this.jdbcTemplate = jdbcTemplate;
+        this.dataSourceManager = dataSourceManager;
     }
 
     @Bean
     public CommandLineRunner seedDb() {
         return args -> {
-            ensureTableExists();
+            ensureCentralTablesExist();
             seedRoles();
             seedCentres();
             seedUsers();
+
+            // --- LOCAL (CENTRE) SCHEMA SEEDS ---
+            centreCVTRepository.findAll().forEach(centre -> {
+                String centreId = String.valueOf(centre.getIdCentre());
+                // switch to that centre's DataSource
+                dataSourceManager.ensureDataSource(centreId);
+
+                // create & seed the five tables in the local DB
+                ensureLocalTablesExist();
+                seedChapitres();
+                seedPointsDefauts();
+                seedAlterations();
+                seedDossiers();
+                seedDossierDefauts();
+                RoutingDataSourceContext.clear();
+            });
+
+            // back to default (central) DataSource
+            RoutingDataSourceContext.clear();
         };
+    }
+
+    //— CENTRAL: existing tables —
+    private void ensureCentralTablesExist() {
+        jdbcTemplate.execute("""
+            DECLARE 
+              v_count INTEGER;
+            BEGIN
+              SELECT COUNT(*) INTO v_count FROM ALL_TABLES WHERE TABLE_NAME = 'GROUPE' AND OWNER = USER;
+              IF v_count = 0 THEN
+                EXECUTE IMMEDIATE 'CREATE TABLE GROUPE (
+                  COD_GRP VARCHAR2(3) PRIMARY KEY, 
+                  DESIGNATION VARCHAR2(100) NOT NULL UNIQUE
+                )';
+              END IF;
+
+              SELECT COUNT(*) INTO v_count FROM ALL_TABLES WHERE TABLE_NAME = 'UTILISATEURS' AND OWNER = USER;
+              IF v_count = 0 THEN
+                EXECUTE IMMEDIATE 'CREATE TABLE UTILISATEURS (
+                  ID_USER VARCHAR2(100) PRIMARY KEY, 
+                  PASSE VARCHAR2(100) NOT NULL, 
+                  PRENOM VARCHAR2(100), 
+                  NOM VARCHAR2(100), 
+                  PRENOMA VARCHAR2(100), 
+                  NOMA VARCHAR2(100), 
+                  DATE_DEB DATE, 
+                  DATE_FIN DATE, 
+                  ETAT VARCHAR2(1) NOT NULL, 
+                  COD_GRP VARCHAR2(3) NOT NULL, 
+                  ID_CENTRE NUMBER NOT NULL
+                )';
+              END IF;
+
+              SELECT COUNT(*) INTO v_count FROM ALL_TABLES WHERE TABLE_NAME = 'CENTRE_CVT' AND OWNER = USER;
+              IF v_count = 0 THEN
+                EXECUTE IMMEDIATE 'CREATE TABLE CENTRE_CVT (
+                  ID_CENTRE NUMBER GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY, 
+                  USERNAME VARCHAR2(50) NOT NULL, 
+                  PASSWORD VARCHAR2(50) NOT NULL, 
+                  MACHINE VARCHAR2(100), 
+                  SID VARCHAR2(100)
+                )';
+              END IF;
+              END;
+            """);
     }
 
     private void seedRoles() {
@@ -55,89 +143,154 @@ public class DataSeeder {
         if (centreCVTRepository.count() == 0) {
             centreCVTRepository.saveAll(List.of(
                     new CentreCVT(10, "local1", "helmi1234", "localhost:1521", "XEPDB1"),
-                    new CentreCVT(20, "local2", "helmi1234", "localhost:1521", "XEPDB1"),
-                    new CentreCVT(30, "local3", "helmi1234", "localhost:1521", "XEPDB1")
+                    new CentreCVT(20, "local2", "helmi1234", "localhost:1521", "XEPDB1")
             ));
         }
     }
 
     private void seedUsers() {
         if (userRepository.count() == 0) {
-
             userRepository.saveAll(List.of(
-                    new User(
-                            "1111",
-                            "nour123@",
-                            "NOUR",
-                            "MAAYOUFI",
-                            "أدمين",
-                            "مستخدم",
-                            LocalDate.now(),
-                            LocalDate.now().plusYears(1),
-                            "E",
-                            "001", // ADMIN
-                            10  // ID_CENTRE 1
-                    ),
-                    new User(
-                            "1112",
-                            "mohammed123@",
-                            "MOHAMMED",
-                            "ORIL",
-                            "مُفتش",
-                            "تجربة",
-                            LocalDate.now(),
-                            LocalDate.now().plusYears(1),
-                            "E",
-                            "002", // INSPECTOR
-                            20  // ID_CENTRE 2
-                    )
+                    new User("1111","nour123@","NOUR","MAAYOUFI","أدمين","مستخدم",
+                            LocalDate.now(), LocalDate.now().plusYears(1),
+                            "E","001",10),
+                    new User("1112","mohammed123@","MOHAMMED","ORIL","مُفتش","تجربة",
+                            LocalDate.now(), LocalDate.now().plusYears(1),
+                            "E","002",20)
             ));
-
-
-
-        }
-    }
-    private void ensureTableExists() {
-        Integer groupeCount = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM ALL_TABLES WHERE TABLE_NAME = 'GROUPE' AND OWNER = USER", Integer.class);
-        if (groupeCount == null || groupeCount == 0) {
-            jdbcTemplate.execute("CREATE TABLE GROUPE ("
-                    + "COD_GRP VARCHAR2(3) PRIMARY KEY, "
-                    + "DESIGNATION VARCHAR2(100) NOT NULL UNIQUE"
-                    + ")");
-        }
-
-        Integer utilisateursCount = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM ALL_TABLES WHERE TABLE_NAME = 'UTILISATEURS' AND OWNER = USER", Integer.class);
-        if (utilisateursCount == null || utilisateursCount == 0) {
-            jdbcTemplate.execute(
-                    "CREATE TABLE UTILISATEURS ("
-                            + "ID_USER VARCHAR2(100) PRIMARY KEY, "
-                            + "PASSE VARCHAR2(100) NOT NULL, "
-                            + "PRENOM VARCHAR2(100), "
-                            + "NOM VARCHAR2(100), "
-                            + "PRENOMA VARCHAR2(100), "
-                            + "NOMA VARCHAR2(100), "
-                            + "DATE_DEB DATE, "
-                            + "DATE_FIN DATE, "
-                            + "ETAT VARCHAR2(1) NOT NULL, "
-                            + "COD_GRP VARCHAR2(3) NOT NULL, "
-                            + "ID_CENTRE NUMBER NOT NULL"
-                            + ")");
-        }
-
-        Integer centreCount = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM ALL_TABLES WHERE TABLE_NAME = 'CENTRE_CVT' AND OWNER = USER", Integer.class);
-        if (centreCount == null || centreCount == 0) {
-            jdbcTemplate.execute(
-                    "CREATE TABLE CENTRE_CVT ("
-                            + "ID_CENTRE NUMBER GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY, "
-                            + "USERNAME VARCHAR2(50) NOT NULL, "
-                            + "PASSWORD VARCHAR2(50) NOT NULL, "
-                            + "MACHINE VARCHAR2(100), "
-                            + "SID VARCHAR2(100)"
-                            + ")");
         }
     }
 
+    //— LOCAL: create the five new tables if they don't exist —
+    private void ensureLocalTablesExist() {
+        // CHAPITRES
+        jdbcTemplate.execute(
+                "BEGIN " +
+                        "  EXECUTE IMMEDIATE 'CREATE TABLE CHAPITRES (" +
+                        "    CODE_CHAPITRE NUMBER PRIMARY KEY, " +
+                        "    LIBELLE_CHAPITRE VARCHAR2(100)" +
+                        "  )'; " +
+                        "EXCEPTION WHEN OTHERS THEN IF SQLCODE != -955 THEN RAISE; END IF; END;"
+        );
+        // POINTS_DEFAUTS
+        jdbcTemplate.execute(
+                "BEGIN " +
+                        "  EXECUTE IMMEDIATE 'CREATE TABLE POINTS_DEFAUTS (" +
+                        "    CODE_POINT NUMBER PRIMARY KEY, " +
+                        "    CODE_CHAPITRE NUMBER, " +
+                        "    LIBELLE_POINT VARCHAR2(200)" +
+                        "  )'; " +
+                        "EXCEPTION WHEN OTHERS THEN IF SQLCODE != -955 THEN RAISE; END IF; END;"
+        );
+        // ALTERATIONS
+        jdbcTemplate.execute(
+                "BEGIN " +
+                        "  EXECUTE IMMEDIATE 'CREATE TABLE ALTERATIONS (" +
+                        "    CODE_ALTERATION NUMBER PRIMARY KEY, " +
+                        "    CODE_CHAPITRE NUMBER, " +
+                        "    CODE_POINT NUMBER, " +
+                        "    LIBELLE_ALTERATION VARCHAR2(200)" +
+                        "  )'; " +
+                        "EXCEPTION WHEN OTHERS THEN IF SQLCODE != -955 THEN RAISE; END IF; END;"
+        );
+        // MES_DOSSIERS
+        jdbcTemplate.execute(
+                "BEGIN " +
+                        "  EXECUTE IMMEDIATE 'CREATE TABLE MES_DOSSIERS (" +
+                        "    N_DOSSIER NUMBER PRIMARY KEY, " +
+                        "    NUM_CHASSIS VARCHAR2(100), " +
+                        "    IMMATRICULATION VARCHAR2(100), " +
+                        "    C_PISTE NUMBER, " +
+                        "    DATE_HEURE_ENREGISTREMENT TIMESTAMP" +
+                        "  )'; " +
+                        "EXCEPTION WHEN OTHERS THEN IF SQLCODE != -955 THEN RAISE; END IF; END;"
+        );
+        // DOSSIER_DEFAUTS
+        jdbcTemplate.execute(
+                "BEGIN " +
+                        "  EXECUTE IMMEDIATE 'CREATE TABLE DOSSIER_DEFAUTS (" +
+                        "    N_DOSSIER NUMBER(10,0), " +
+                        "    NUM_CENTRE NUMBER(5,0) NOT NULL, " +
+                        "    DAT_CTRL DATE NOT NULL, " +
+                        "    DATE_HEURE_ENREGISTREMENT TIMESTAMP, " +
+                        "    NUM_CHASSIS VARCHAR2(25), " +
+                        "    CODE_DEFAUT VARCHAR2(10), " +
+                        "    MAT_AGENT VARCHAR2(100), " +
+                        "    PRIMARY KEY (N_DOSSIER, CODE_DEFAUT)" +
+                        "  )'; " +
+                        "EXCEPTION WHEN OTHERS THEN IF SQLCODE != -955 THEN RAISE; END IF; END;"
+        );
+    }
+
+    private void seedChapitres() {
+        if (chapitreRepository.count() == 0) {
+            chapitreRepository.saveAll(List.of(
+                    new Chapitre(0, "CONFORMITE CARTE GRISE"),
+                    new Chapitre(1, "FEUX / POLLUTION"),
+                    new Chapitre(2, "CHASSIS SUSPENS"),
+                    new Chapitre(3, "CARROSSERIE"),
+                    new Chapitre(4, "AVERTISSEUR SONORE ET BRUIT"),
+                    new Chapitre(5, "ROUES/DIRECTION"),
+                    new Chapitre(6, "MECANISME"),
+                    new Chapitre(7, "MESURES"),
+                    new Chapitre(8, "EQUIPEMENTS SPECIAUX"),
+                    new Chapitre(9, "AUTRES")
+            ));
+        }
+    }
+
+    private void seedPointsDefauts() {
+        if (pointDefautRepository.count() == 0) {
+            pointDefautRepository.saveAll(List.of(
+                    new PointDefaut(1, 0, "IDENTIFIANTS DU VEHICULE"),
+                    new PointDefaut(2, 0, "PLAQUE DU CONSTRUCTEUR"),
+                    new PointDefaut(3, 0, "IDENTIFIANTS DU VEHICULE"),
+                    new PointDefaut(4, 0, "PLAQUE D'IMMATRICULATION"),
+                    new PointDefaut(5, 1, "FEUX DE ROUTE"),
+                    new PointDefaut(6, 1, "FEUX DE CROISEMENT"),
+                    new PointDefaut(7, 1, "FEUX DE POSITION AVANT ET ARRIERE"),
+                    new PointDefaut(8, 1, "FEUX DE CHANGEMENT DE DIRECTION"),
+                    new PointDefaut(9, 1, "FEUX STOP"),
+                    new PointDefaut(10, 1, "ECLAIRAGE DE LA PLAQUE D'IMMATRICULATION"),
+                    new PointDefaut(11, 1, "CATADIOPTRE"),
+                    new PointDefaut(12, 1, "FEUX DE GABARIT"),
+                    new PointDefaut(13, 1, "AUTRES FEUX")
+            ));
+        }
+    }
+
+    private void seedAlterations() {
+        if (alterationRepository.count() == 0) {
+            alterationRepository.saveAll(List.of(
+                    new Alteration(10, 0, 3, "Transformation notable non autorisée"),
+                    new Alteration(11, 0, 2, "Non conforme (couleur, dimension)"),
+                    new Alteration(12, 0, 4, "Portant un N° d'immatriculation faux"),
+                    new Alteration(13, 0, 4, "Ecriture Illisible"),
+                    new Alteration(14, 1, 0, "Mauvaise fixation")
+            ));
+        }
+    }
+
+    private void seedDossiers() {
+        if (dossierRepository.count() == 0) {
+            dossierRepository.saveAll(List.of(
+                    new Dossier(1665887, "YU15DMG4MT005344", "TU5883221",  0, LocalDateTime.of(2025,5,12,11,6,57)),
+                    new Dossier(1665823, "KL1TJ5CD2DB014893", "TU6622163",  4, LocalDateTime.of(2025,5,12,13,0)),
+                    new Dossier(1665824, "LSJA36E6XP2260406", "TU582239",   5, LocalDateTime.of(2025,5,12,13,10))
+            ));
+        }
+    }
+
+    private void seedDossierDefauts() {
+        if (dossierDefautRepository.count() == 0) {
+            dossierDefautRepository.saveAll(List.of(
+                    new DossierDefaut(new DossierDefautId(1665887,"0512"), 10, LocalDate.of(2025,5,12),
+                            LocalDateTime.now(), "YU15DMG4MT005344", "AG001"),
+                    new DossierDefaut(new DossierDefautId(1665981,"0512"), 20, LocalDate.of(2025,5,12),
+                            LocalDateTime.now(), "KL1TJ5CD2DB014893",  "AG002"),
+                    new DossierDefaut(new DossierDefautId(1665000,"0512"), 30, LocalDate.of(2025,5,12),
+                            LocalDateTime.now(), "LSJA36E6XP2260406","AG003")
+            ));
+        }
+    }
 }

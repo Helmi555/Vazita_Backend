@@ -153,4 +153,20 @@ public class User {
         return "E".equals(this.status);
     }
 
+    @Override
+    public String toString() {
+        return "User{" +
+                "idUser='" + idUser + '\'' +
+                ", password='" + password + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", firstNameA='" + firstNameA + '\'' +
+                ", lastNameA='" + lastNameA + '\'' +
+                ", startDate=" + startDate +
+                ", endDate=" + endDate +
+                ", status='" + status + '\'' +
+                ", codGrp='" + codGrp + '\'' +
+                ", idCentre=" + idCentre +
+                '}';
+    }
 }

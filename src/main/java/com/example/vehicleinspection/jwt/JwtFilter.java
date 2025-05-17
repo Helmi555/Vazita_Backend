@@ -29,6 +29,8 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtBlacklistService jwtBlacklistService;
     private final DataSourceManager dataSourceManager;
     private static final Logger logger = LoggerFactory.getLogger(JwtFilter.class);
+    private static final List<String> allowedPaths = List.of("/api/v1/auth/login");
+    private static final List<String> allowedCentralPaths = List.of("/api/v1/users");
 
     public JwtFilter(JwtUtils jwtUtils,
                      JwtBlacklistService jwtBlacklistService,
@@ -45,16 +47,19 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getRequestURI();
-        if (path.equals("/api/v1/auth/login") || path.equals("/api/v1/auth/logout")) {
+        String token = parseJwt(request);
+
+        logger.info("Path is {} and method {} and token is {}", path, request.getMethod(),token);
+        if (allowedPaths.contains(path)) {
             filterChain.doFilter(request, response);
             return;
         }
-        String token = parseJwt(request);
         if (token != null) {
             if (jwtBlacklistService.isTokenBlacklisted(token)) {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "JWT token is blacklisted");
                 return;
             }
+
 
             try {
                 jwtUtils.validateJwtToken(token);
@@ -70,7 +75,10 @@ public class JwtFilter extends OncePerRequestFilter {
                                 List.of(new SimpleGrantedAuthority(role))
                         );
                 SecurityContextHolder.getContext().setAuthentication(auth);
-
+                if (allowedCentralPaths.contains(path)) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
                 dataSourceManager.ensureDataSource(centreId.toString());
 
             } catch (JwtException ex) {
