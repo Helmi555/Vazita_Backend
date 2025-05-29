@@ -1,5 +1,6 @@
 package com.example.vehicleinspection.config;
 
+import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.Components;
@@ -14,6 +15,7 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
+//                .addServersItem(new Server().url("https://dream.serveo.net"))
                 .info(new Info()
                         .title("User Management Microservice API")
                         .version("1.0")

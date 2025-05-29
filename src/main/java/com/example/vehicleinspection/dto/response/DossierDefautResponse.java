@@ -1,36 +1,35 @@
-package com.example.vehicleinspection.model;
+package com.example.vehicleinspection.dto.response;
 
-
+import com.example.vehicleinspection.model.DossierDefaut;
 import com.example.vehicleinspection.model.keys.DossierDefautId;
-import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "DOSSIER_DEFAUTS")
-public class DossierDefaut {
+public class DossierDefautResponse {
 
-    @EmbeddedId
-    private DossierDefautId id;
-
-    @Column(name = "NUM_CENTRE",nullable = false, precision = 5, scale = 0)
+    private Integer nDossier;
+    private String codeDefaut;
     private Integer numCentre;
-    @Column(name = "DAT_CTRL",nullable = false)
     private LocalDate dateControl;
-    @Column(name = "DATE_HEURE_ENREGISTREMENT")
     private LocalDateTime dateHeureEnregistrement;
-    @Column(name = "NUM_CHASSIS",length = 25)
     private String numChassis;
     private String matAgent;
 
-
-    public DossierDefautId getId() {
-        return id;
+    public Integer getnDossier() {
+        return nDossier;
     }
 
-    public void setId(DossierDefautId id) {
-        this.id = id;
+    public void setnDossier(Integer nDossier) {
+        this.nDossier = nDossier;
+    }
+
+    public String getCodeDefaut() {
+        return codeDefaut;
+    }
+
+    public void setCodeDefaut(String codeDefaut) {
+        this.codeDefaut = codeDefaut;
     }
 
     public Integer getNumCentre() {
@@ -65,7 +64,6 @@ public class DossierDefaut {
         this.numChassis = numChassis;
     }
 
-
     public String getMatAgent() {
         return matAgent;
     }
@@ -74,20 +72,9 @@ public class DossierDefaut {
         this.matAgent = matAgent;
     }
 
-    @Override
-    public String toString() {
-        return "DossierDefaut{" +
-                "id=" + id +
-                ", numCentre=" + numCentre +
-                ", dateControl=" + dateControl +
-                ", dateHeureEnregistrement=" + dateHeureEnregistrement +
-                ", numChassis='" + numChassis + '\'' +
-                ", matAgent='" + matAgent + '\'' +
-                '}';
-    }
-
-    public DossierDefaut(DossierDefautId id, Integer numCentre, LocalDate dateControl, LocalDateTime dateHeureEnregistrement, String numChassis, String matAgent) {
-        this.id = id;
+    public DossierDefautResponse(Integer nDossier, String codeDefaut, Integer numCentre, LocalDate dateControl, LocalDateTime dateHeureEnregistrement, String numChassis, String matAgent) {
+        this.nDossier = nDossier;
+        this.codeDefaut = codeDefaut;
         this.numCentre = numCentre;
         this.dateControl = dateControl;
         this.dateHeureEnregistrement = dateHeureEnregistrement;
@@ -95,6 +82,18 @@ public class DossierDefaut {
         this.matAgent = matAgent;
     }
 
-    public DossierDefaut() {
+    public DossierDefautResponse() {
+    }
+
+    public static DossierDefautResponse toDossierDefautResponse(DossierDefaut dossierDefaut) {
+        return new DossierDefautResponse(
+                dossierDefaut.getId().getnDossier(),
+                dossierDefaut.getId().getCodeDefaut(),
+                dossierDefaut.getNumCentre(),
+                dossierDefaut.getDateControl(),
+                dossierDefaut.getDateHeureEnregistrement(),
+                dossierDefaut.getNumChassis(),
+                dossierDefaut.getMatAgent()
+        );
     }
 }

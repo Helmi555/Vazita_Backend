@@ -30,7 +30,7 @@ public class JwtFilter extends OncePerRequestFilter {
     private final DataSourceManager dataSourceManager;
     private static final Logger logger = LoggerFactory.getLogger(JwtFilter.class);
     private static final List<String> allowedPaths = List.of("/api/v1/auth/login");
-    private static final List<String> allowedCentralPaths = List.of("/api/v1/users");
+    private static final List<String> allowedCentralPaths = List.of("/api/v1/users","/api/v1/users/me");
 
     public JwtFilter(JwtUtils jwtUtils,
                      JwtBlacklistService jwtBlacklistService,
@@ -75,7 +75,8 @@ public class JwtFilter extends OncePerRequestFilter {
                                 List.of(new SimpleGrantedAuthority(role))
                         );
                 SecurityContextHolder.getContext().setAuthentication(auth);
-                if (allowedCentralPaths.contains(path)) {
+                if (allowedCentralPaths.contains(path) || path.startsWith("/api/v1/users/")) {
+                    logger.info("Hii updated user {}",path.startsWith("/api/v1/users/"));
                     filterChain.doFilter(request, response);
                     return;
                 }

@@ -9,4 +9,6 @@ public interface DossierService {
     List<DossierResponse> getDossierByPisteId(Integer pisteId);
 
     void submitDossierById(Integer numDossier, DossierDefautsRequest dossierDefautsRequest, Integer numCentre, String matAgent);
+
+    void updateDossierById(Integer numDossier, DossierDefautsRequest dossierDefautsRequest, Integer numCentre);
 }

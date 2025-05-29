@@ -3,6 +3,7 @@ package com.example.vehicleinspection.service.Impl;
 import com.example.vehicleinspection.dto.request.LoginRequest;
 import com.example.vehicleinspection.dto.response.LoginResponse;
 import com.example.vehicleinspection.exception.AccessMemberDeniedException;
+import com.example.vehicleinspection.exception.ElementNotFoundException;
 import com.example.vehicleinspection.model.CentreCVT;
 import com.example.vehicleinspection.model.Group;
 import com.example.vehicleinspection.model.User;
@@ -37,7 +38,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
         User user =userRepository.findById(loginRequest.getId()).orElseThrow(
-                ()->new UsernameNotFoundException("User not found")
+                ()->new ElementNotFoundException("User not found")
         );
 
         if(!user.isValid()){
@@ -47,11 +48,11 @@ public class AuthServiceImpl implements AuthService {
             throw new BadCredentialsException("Wrong password");
         }
         Group group=groupRepository.findById(user.getCodGrp()).orElseThrow(
-                ()->new UsernameNotFoundException("Group not found")
+                ()->new ElementNotFoundException("Group not found")
         );
 
         CentreCVT centreCVT=centreCVTRepository.findById(user.getIdCentre()).orElseThrow(
-                ()->new UsernameNotFoundException("Centre CVT not found")
+                ()->new ElementNotFoundException("Centre CVT not found")
         );
 
         logger.info("User to create {}",user);

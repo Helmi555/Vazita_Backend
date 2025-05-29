@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,9 +41,15 @@ public class DossierServiceImpl implements DossierService {
 
     @Override
     public List<DossierResponse> getDossierByPisteId(Integer pisteId) {
-        List<Dossier> dossiers=dossierRepository.findAllByCPiste(pisteId).orElse(Collections.emptyList());
 
-        return  dossiers.stream().map(DossierResponse::dossierToDossierResponse).collect(Collectors.toList());
+        List<Dossier> dossiers = dossierRepository.findAllByCPisteAndDossierDefautExists(pisteId);
+        if (dossiers.isEmpty()) {
+            logger.info("No dossiers found for pisteId {}", pisteId);
+        }
+
+        return dossiers.stream()
+                .map(DossierResponse::dossierToDossierResponse)
+                .toList();
     }
 
     @Override
@@ -71,6 +78,46 @@ public class DossierServiceImpl implements DossierService {
             dossierDefautRepository.save(dossierDefaut);
         }
         logger.info("Successfully submitted dossier with {} alterations", alterations.size());
+    }
+
+
+    @Override
+    @Transactional
+    public void updateDossierById(Integer numDossier, DossierDefautsRequest dossierDefautsRequest, Integer numCentre) {
+        Dossier dossier = dossierRepository.findById(numDossier)
+                .orElseThrow(() -> new UsernameNotFoundException("Dossier not found"));
+        LocalDate dateCtrl = LocalDate.now();
+        List<Alteration> alterations = alterationRepository.findAllById(dossierDefautsRequest.getCodeAlterations());
+        logger.info("Alterations to update are\n {}", alterations);
+
+        if(alterations.isEmpty()){
+            throw new UsernameNotFoundException("No alterations founded");
+        }
+
+        DossierDefaut dd=dossierDefautRepository.findFirstById_NDossier(numDossier).orElse(null);
+        String matAgent= dd!=null?dd.getMatAgent():null;
+        logger.info("*********** Mat Agent is\n {}", matAgent);
+
+        // Delete existing DossierDefaut records for this numDossier
+        dossierDefautRepository.deleteByIdNDossier(numDossier);
+
+        // Create and save new DossierDefaut records
+        for (Alteration alteration : alterations) {
+            String codeDef = alteration.getCodeChapitre().toString() +
+                    alteration.getCodePoint().toString() +
+                    alteration.getCodeAlteration().toString();
+            DossierDefaut dossierDefaut = new DossierDefaut(
+                    new DossierDefautId(numDossier,codeDef),
+                    numCentre,
+                    dateCtrl,
+                    dossier.getDateHeureEnregistrement(),
+                    dossier.getNumChassis(),
+                    matAgent
+            );
+            logger.info("DossierDefaut to save is\n {}", dossierDefaut);
+            dossierDefautRepository.save(dossierDefaut);
+        }
+        logger.info("Successfully updated dossier {} with {} alterations", numDossier, alterations.size());
     }
 
 }

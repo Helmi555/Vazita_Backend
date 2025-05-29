@@ -3,10 +3,16 @@ package com.example.vehicleinspection.service;
 import com.example.vehicleinspection.dto.request.UserRequest;
 import com.example.vehicleinspection.dto.response.UserResponse;
 
-import java.net.URI;
+import java.util.List;
 
 public interface UserService {
-    UserResponse getUser(String username);
+    UserResponse getUserMe(String username);
 
     void createUser(UserRequest userRequest);
+
+    List<UserResponse> getUsers(String userId);
+
+    void updateUser(String userId, UserRequest userRequest);
+
+    void deleteUser(String userId);
 }

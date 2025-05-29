@@ -8,6 +8,5 @@ public interface AuthService {
 
     void logout(String username, String token);
 
-    interface DossierDefautService {
-    }
+
 }
