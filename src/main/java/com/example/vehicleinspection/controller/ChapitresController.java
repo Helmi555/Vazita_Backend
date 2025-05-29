@@ -21,7 +21,7 @@ public class ChapitresController {
         this.chapitreService = chapitreService;
     }
 
-    @PreAuthorize("hasAnyRole('INSPECTOR','ADMIN')")
+    @PreAuthorize("hasAnyRole('INSPECTEUR','ADMIN')")
     @GetMapping("")
     public ResponseEntity<?> getChapitres() {
         List<ChapitreResponse> chapitreResponseList=chapitreService.getChapitres();

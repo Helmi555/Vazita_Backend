@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 //@Configuration
+
 public class DataSeeder {
 
     private final GroupRepository groupRepository;
@@ -133,7 +134,7 @@ public class DataSeeder {
         if (groupRepository.count() == 0) {
             groupRepository.saveAll(List.of(
                     new Group("001", Role.ADMIN),
-                    new Group("002", Role.INSPECTOR),
+                    new Group("002", Role.INSPECTEUR),
                     new Group("003", Role.ADJOINT)
             ));
         }

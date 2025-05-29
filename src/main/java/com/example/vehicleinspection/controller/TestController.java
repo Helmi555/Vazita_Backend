@@ -24,7 +24,6 @@ public class TestController {
         this.testRepository = testRepository;
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/db")
     public String testDBConnection() throws SQLException {
         //System.out.println("Testttttttttttttttttttttttt");
@@ -37,7 +36,6 @@ public class TestController {
         }
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','INSPECTOR')")
     @GetMapping("/db-query")
     public ResponseEntity<?> testDBQuery() throws SQLException {
        // System.out.println("QUERyyyyyyyyyy");
