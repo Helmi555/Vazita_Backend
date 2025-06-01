@@ -40,11 +40,10 @@ public class AuthServiceImpl implements AuthService {
         User user =userRepository.findById(loginRequest.getId()).orElseThrow(
                 ()->new ElementNotFoundException("User not found")
         );
-
         if(!user.isValid()){
             throw new AccessMemberDeniedException("Access denied");
         }
-        if(!loginRequest.getPassword().matches(user.getPassword())){
+        if(!loginRequest.getPassword().equals(user.getPassword())){
             throw new BadCredentialsException("Wrong password");
         }
         Group group=groupRepository.findById(user.getCodGrp()).orElseThrow(
@@ -68,8 +67,4 @@ public class AuthServiceImpl implements AuthService {
 
     }
 
-    @Override
-    public void logout(String username, String token) {
-
-    }
 }

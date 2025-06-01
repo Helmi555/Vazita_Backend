@@ -12,21 +12,22 @@ import java.time.LocalDate;
 @EndDateAfterStartDate
 public class UserRequest {
 
-    @NotBlank(message = "Id must not be empty")
-    private String idUser;
-    @NotBlank(message = "Password must not be empty")
-    private String password;
-    private String firstName;
-    private String lastName;
-    private String firstNameA;
-    private String lastNameA;
+
+     @NotBlank(message = "Id must not be empty")
+     private String idUser;
+     @NotBlank(message = "Password must not be empty")
+     private String password;
+     private String firstName;
+     private String lastName;
+     private String firstNameA;
+     private String lastNameA;
      private LocalDate startDate;
      private LocalDate endDate;
-    @Pattern(regexp = "E|A",message = "Status should be A ou E")
+     @Pattern(regexp = "E|A",message = "Status should be A ou E")
      private String status="E";
-    @NotNull(message = "Role must not be empty/not valid Role")
+     @NotNull(message = "Role must not be empty/not valid Role")
      private Role designation;
-    @NotNull(message = "Id centre must not be null")
+     @NotNull(message = "Id centre must not be null")
      private Integer idCentre;
 
     public UserRequest() {
@@ -132,5 +133,22 @@ public class UserRequest {
         this.status = status;
         this.designation = designation;
         this.idCentre = idCentre;
+    }
+
+    @Override
+    public String toString() {
+        return "UserRequest{" +
+                "idUser='" + idUser + '\'' +
+                ", password='" + password + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", firstNameA='" + firstNameA + '\'' +
+                ", lastNameA='" + lastNameA + '\'' +
+                ", startDate=" + startDate +
+                ", endDate=" + endDate +
+                ", status='" + status + '\'' +
+                ", designation=" + designation +
+                ", idCentre=" + idCentre +
+                '}';
     }
 }

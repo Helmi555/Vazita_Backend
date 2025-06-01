@@ -15,6 +15,7 @@ public class DossierDefautResponse {
     private LocalDateTime dateHeureEnregistrement;
     private String numChassis;
     private String matAgent;
+    private String codemarque;
 
     public Integer getnDossier() {
         return nDossier;
@@ -72,7 +73,7 @@ public class DossierDefautResponse {
         this.matAgent = matAgent;
     }
 
-    public DossierDefautResponse(Integer nDossier, String codeDefaut, Integer numCentre, LocalDate dateControl, LocalDateTime dateHeureEnregistrement, String numChassis, String matAgent) {
+    public DossierDefautResponse(Integer nDossier, String codeDefaut, Integer numCentre, LocalDate dateControl, LocalDateTime dateHeureEnregistrement, String numChassis, String matAgent, String codemarque) {
         this.nDossier = nDossier;
         this.codeDefaut = codeDefaut;
         this.numCentre = numCentre;
@@ -80,6 +81,15 @@ public class DossierDefautResponse {
         this.dateHeureEnregistrement = dateHeureEnregistrement;
         this.numChassis = numChassis;
         this.matAgent = matAgent;
+        this.codemarque = codemarque;
+    }
+
+    public String getCodemarque() {
+        return codemarque;
+    }
+
+    public void setCodemarque(String codemarque) {
+        this.codemarque = codemarque;
     }
 
     public DossierDefautResponse() {
@@ -93,7 +103,8 @@ public class DossierDefautResponse {
                 dossierDefaut.getDateControl(),
                 dossierDefaut.getDateHeureEnregistrement(),
                 dossierDefaut.getNumChassis(),
-                dossierDefaut.getMatAgent()
+                dossierDefaut.getMatAgent(),
+                dossierDefaut.getCodeMarque()
         );
     }
 }

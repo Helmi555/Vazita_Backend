@@ -15,7 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-//@Configuration
+@Configuration
 
 public class DataSeeder {
 
@@ -28,8 +28,8 @@ public class DataSeeder {
     private final AlterationRepository alterationRepository;
     private final DossierRepository dossierRepository;
     private final DossierDefautRepository dossierDefautRepository;
-
-    private final JdbcTemplate jdbcTemplate;
+    private final MarqueVEHRepository marqueVEHRepository
+;    private final JdbcTemplate jdbcTemplate;
     private final DataSourceManager dataSourceManager;
 
     public DataSeeder(
@@ -40,7 +40,7 @@ public class DataSeeder {
             PointDefautRepository pointDefautRepository,
             AlterationRepository alterationRepository,
             DossierRepository dossierRepository,
-            DossierDefautRepository dossierDefautRepository,
+            DossierDefautRepository dossierDefautRepository, MarqueVEHRepository marqueVEHRepository,
             JdbcTemplate jdbcTemplate,
             DataSourceManager dataSourceManager
     ) {
@@ -52,6 +52,7 @@ public class DataSeeder {
         this.alterationRepository = alterationRepository;
         this.dossierRepository = dossierRepository;
         this.dossierDefautRepository = dossierDefautRepository;
+        this.marqueVEHRepository = marqueVEHRepository;
         this.jdbcTemplate = jdbcTemplate;
         this.dataSourceManager = dataSourceManager;
     }
@@ -77,6 +78,7 @@ public class DataSeeder {
                 seedAlterations();
                 seedDossiers();
                 seedDossierDefauts();
+                seedMarqueVeh();
                 RoutingDataSourceContext.clear();
             });
 
@@ -202,7 +204,8 @@ public class DataSeeder {
                         "    NUM_CHASSIS VARCHAR2(100), " +
                         "    IMMATRICULATION VARCHAR2(100), " +
                         "    C_PISTE NUMBER, " +
-                        "    DATE_HEURE_ENREGISTREMENT TIMESTAMP" +
+                        "    DATE_HEURE_ENREGISTREMENT TIMESTAMP," +
+                        "    CODE_MARQUE VARCHAR2(50)"+
                         "  )'; " +
                         "EXCEPTION WHEN OTHERS THEN IF SQLCODE != -955 THEN RAISE; END IF; END;"
         );
@@ -217,9 +220,22 @@ public class DataSeeder {
                         "    NUM_CHASSIS VARCHAR2(25), " +
                         "    CODE_DEFAUT VARCHAR2(10), " +
                         "    MAT_AGENT VARCHAR2(100), " +
-                        "    PRIMARY KEY (N_DOSSIER, CODE_DEFAUT)" +
+                        "    PRIMARY KEY (N_DOSSIER, CODE_DEFAUT)," +
+                        "    CODE_MARQUE VARCHAR2(50)"+
                         "  )'; " +
                         "EXCEPTION WHEN OTHERS THEN IF SQLCODE != -955 THEN RAISE; END IF; END;"
+        );
+
+        // MARQUE_VEH
+        jdbcTemplate.execute(
+                "BEGIN " +
+                        "  EXECUTE IMMEDIATE 'CREATE TABLE MARQUE_VEH (" +
+                        "    CD_MARQ VARCHAR2(50) PRIMARY KEY, " +
+                        "    DESIGL VARCHAR2(25), " +
+                        "    DESIGA VARCHAR2(25) " +
+                        "  )'; " +
+                        "EXCEPTION WHEN OTHERS THEN IF SQLCODE != -955 THEN RAISE; END IF; END;"
+
         );
     }
 
@@ -251,11 +267,8 @@ public class DataSeeder {
                     new PointDefaut(6, 1, "FEUX DE CROISEMENT"),
                     new PointDefaut(7, 1, "FEUX DE POSITION AVANT ET ARRIERE"),
                     new PointDefaut(8, 1, "FEUX DE CHANGEMENT DE DIRECTION"),
-                    new PointDefaut(9, 1, "FEUX STOP"),
-                    new PointDefaut(10, 1, "ECLAIRAGE DE LA PLAQUE D'IMMATRICULATION"),
-                    new PointDefaut(11, 1, "CATADIOPTRE"),
-                    new PointDefaut(12, 1, "FEUX DE GABARIT"),
-                    new PointDefaut(13, 1, "AUTRES FEUX")
+                    new PointDefaut(9, 1, "FEUX STOP")
+
             ));
         }
     }
@@ -263,11 +276,11 @@ public class DataSeeder {
     private void seedAlterations() {
         if (alterationRepository.count() == 0) {
             alterationRepository.saveAll(List.of(
-                    new Alteration(10, 0, 3, "Transformation notable non autorisée"),
-                    new Alteration(11, 0, 2, "Non conforme (couleur, dimension)"),
-                    new Alteration(12, 0, 4, "Portant un N° d'immatriculation faux"),
-                    new Alteration(13, 0, 4, "Ecriture Illisible"),
-                    new Alteration(14, 1, 0, "Mauvaise fixation")
+                    new Alteration(1, 0, 3, "Transformation notable non autorisée"),
+                    new Alteration(5, 0, 2, "Non conforme (couleur, dimension)"),
+                    new Alteration(2, 0, 4, "Portant un N° d'immatriculation faux"),
+                    new Alteration(3, 0, 4, "Ecriture Illisible"),
+                    new Alteration(4, 1, 0, "Mauvaise fixation")
             ));
         }
     }
@@ -275,9 +288,9 @@ public class DataSeeder {
     private void seedDossiers() {
         if (dossierRepository.count() == 0) {
             dossierRepository.saveAll(List.of(
-                    new Dossier(1665887, "YU15DMG4MT005344", "TU5883221",  0, LocalDateTime.of(2025,5,12,11,6,57)),
-                    new Dossier(1665823, "KL1TJ5CD2DB014893", "TU6622163",  4, LocalDateTime.of(2025,5,12,13,0)),
-                    new Dossier(1665824, "LSJA36E6XP2260406", "TU582239",   5, LocalDateTime.of(2025,5,12,13,10))
+                    new Dossier(1665887, "YU15DMG4MT005344", "TU5883221",  0, LocalDateTime.of(2025,5,12,11,6,57),"45"),
+                    new Dossier(1665823, "KL1TJ5CD2DB014893", "TU6622163",  4, LocalDateTime.of(2025,5,12,13,0),"46"),
+                    new Dossier(1665824, "LSJA36E6XP2260406", "TU582239",   5, LocalDateTime.of(2025,5,12,13,10),"47")
             ));
         }
     }
@@ -285,13 +298,31 @@ public class DataSeeder {
     private void seedDossierDefauts() {
         if (dossierDefautRepository.count() == 0) {
             dossierDefautRepository.saveAll(List.of(
-                    new DossierDefaut(new DossierDefautId(1665887,"0512"), 10, LocalDate.of(2025,5,12),
-                            LocalDateTime.now(), "YU15DMG4MT005344", "AG001"),
-                    new DossierDefaut(new DossierDefautId(1665981,"0512"), 20, LocalDate.of(2025,5,12),
-                            LocalDateTime.now(), "KL1TJ5CD2DB014893",  "AG002"),
-                    new DossierDefaut(new DossierDefautId(1665000,"0512"), 30, LocalDate.of(2025,5,12),
-                            LocalDateTime.now(), "LSJA36E6XP2260406","AG003")
+                    new DossierDefaut(new DossierDefautId(1665887,"051"), 10, LocalDate.of(2025,5,12),
+                            LocalDateTime.now(), "YU15DMG4MT005344", "AG001","45"),
+                    new DossierDefaut(new DossierDefautId(1665823,"052"), 20, LocalDate.of(2025,5,12),
+                            LocalDateTime.now(), "KL1TJ5CD2DB014893",  "AG002","46"),
+                    new DossierDefaut(new DossierDefautId(1665824,"012"), 30, LocalDate.of(2025,5,12),
+                            LocalDateTime.now(), "LSJA36E6XP2260406","AG003","47"),
+                    new DossierDefaut(new DossierDefautId(1665824,"043"), 30, LocalDate.of(2025,5,12),
+                            LocalDateTime.now(), "LSJA36E6XP2260406","AG003","47")
             ));
+        }
+    }
+    private void seedMarqueVeh(){
+        if(marqueVEHRepository.count()==0){
+            marqueVEHRepository.saveAll(List.of(
+                    new MarqueVEH("47","toyota","arabic"),
+                    new MarqueVEH("45","BMW","arabic"),
+                    new MarqueVEH("46","audi","arabic2"),
+                    new MarqueVEH("48","ToyotA","arabic"),
+                    new MarqueVEH("49","mercedez","arabic"),
+                    new MarqueVEH("50","Opel","arabic2")
+
+
+
+
+                    ));
         }
     }
 }

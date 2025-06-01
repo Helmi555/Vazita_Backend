@@ -52,6 +52,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void createUser(UserRequest userRequest) {
+        logger.info("We are in the create user with {}", userRequest);
         if(userRepository.existsById(userRequest.getIdUser())){
             throw new ElementNotFoundException("User already exists in system");
         }

@@ -23,6 +23,8 @@ public class DossierDefaut {
     @Column(name = "NUM_CHASSIS",length = 25)
     private String numChassis;
     private String matAgent;
+    @Column(name = "CODE_MARQUE")
+    private String codeMarque;
 
 
     public DossierDefautId getId() {
@@ -83,16 +85,26 @@ public class DossierDefaut {
                 ", dateHeureEnregistrement=" + dateHeureEnregistrement +
                 ", numChassis='" + numChassis + '\'' +
                 ", matAgent='" + matAgent + '\'' +
+                ", codeMarque='" + codeMarque + '\'' +
                 '}';
     }
 
-    public DossierDefaut(DossierDefautId id, Integer numCentre, LocalDate dateControl, LocalDateTime dateHeureEnregistrement, String numChassis, String matAgent) {
+    public DossierDefaut(DossierDefautId id, Integer numCentre, LocalDate dateControl, LocalDateTime dateHeureEnregistrement, String numChassis, String matAgent,String codeMarque) {
         this.id = id;
         this.numCentre = numCentre;
         this.dateControl = dateControl;
         this.dateHeureEnregistrement = dateHeureEnregistrement;
         this.numChassis = numChassis;
         this.matAgent = matAgent;
+        this.codeMarque=codeMarque;
+    }
+
+    public String getCodeMarque() {
+        return codeMarque;
+    }
+
+    public void setCodeMarque(String codeMarque) {
+        this.codeMarque = codeMarque;
     }
 
     public DossierDefaut() {

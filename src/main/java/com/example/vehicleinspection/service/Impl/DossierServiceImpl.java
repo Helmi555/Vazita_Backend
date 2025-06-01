@@ -9,11 +9,14 @@ import com.example.vehicleinspection.model.keys.DossierDefautId;
 import com.example.vehicleinspection.repository.*;
 import com.example.vehicleinspection.service.DossierService;
 import com.example.vehicleinspection.service.UserService;
-import jakarta.transaction.Transactional;
+import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -30,13 +33,15 @@ public class DossierServiceImpl implements DossierService {
     private final static Logger logger= LoggerFactory.getLogger(DossierServiceImpl.class);
     private final AlterationRepository alterationRepository;
     private final DossierDefautRepository dossierDefautRepository;
+    private final EntityManager entityManager;
 
-    public DossierServiceImpl(DossierRepository dossierRepository, UserRepository userRepository, CentreCVTRepository centreCVTRepository, AlterationRepository alterationRepository, DossierDefautRepository dossierDefautRepository) {
+    public DossierServiceImpl(DossierRepository dossierRepository, UserRepository userRepository, CentreCVTRepository centreCVTRepository, AlterationRepository alterationRepository, DossierDefautRepository dossierDefautRepository, EntityManager entityManager) {
         this.dossierRepository = dossierRepository;
         this.userRepository = userRepository;
         this.centreCVTRepository = centreCVTRepository;
         this.alterationRepository = alterationRepository;
         this.dossierDefautRepository = dossierDefautRepository;
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -72,7 +77,8 @@ public class DossierServiceImpl implements DossierService {
                     dateCtrl,
                     dossier.getDateHeureEnregistrement(),
                     dossier.getNumChassis(),
-                    matAgent
+                    matAgent,
+                    dossier.getCodeMarque()
             );
             logger.info("DossierDefaut to save is\n {}",dossierDefaut);
             dossierDefautRepository.save(dossierDefaut);
@@ -85,22 +91,22 @@ public class DossierServiceImpl implements DossierService {
     @Transactional
     public void updateDossierById(Integer numDossier, DossierDefautsRequest dossierDefautsRequest, Integer numCentre) {
         Dossier dossier = dossierRepository.findById(numDossier)
-                .orElseThrow(() -> new UsernameNotFoundException("Dossier not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("Dossier not found with id : "+numDossier));
         LocalDate dateCtrl = LocalDate.now();
-        List<Alteration> alterations = alterationRepository.findAllById(dossierDefautsRequest.getCodeAlterations());
-        logger.info("Alterations to update are\n {}", alterations);
+        List<Integer> codeAlterations=dossierDefautsRequest.getCodeDefauts().stream().map(s->s.substring(2)).map(Integer::valueOf).toList();
+        logger.info("Les code alterations are : {}", codeAlterations);
+        List<Alteration> alterations=alterationRepository.findAllById(codeAlterations);
+        logger.info("Alterations to update are\n {} and the old are \n{}", alterations,dossierDefautsRequest.getCodeDefauts());
 
-        if(alterations.isEmpty()){
-            throw new UsernameNotFoundException("No alterations founded");
-        }
 
         DossierDefaut dd=dossierDefautRepository.findFirstById_NDossier(numDossier).orElse(null);
+        logger.info("*********** Dossier defaut  is\n {}", dd);
         String matAgent= dd!=null?dd.getMatAgent():null;
         logger.info("*********** Mat Agent is\n {}", matAgent);
 
-        // Delete existing DossierDefaut records for this numDossier
-        dossierDefautRepository.deleteByIdNDossier(numDossier);
-
+        dossierDefautRepository.deleteAllByNDossier(numDossier);
+        dossierDefautRepository.flush();
+        entityManager.clear();
         // Create and save new DossierDefaut records
         for (Alteration alteration : alterations) {
             String codeDef = alteration.getCodeChapitre().toString() +
@@ -112,7 +118,8 @@ public class DossierServiceImpl implements DossierService {
                     dateCtrl,
                     dossier.getDateHeureEnregistrement(),
                     dossier.getNumChassis(),
-                    matAgent
+                    matAgent,
+                    dossier.getCodeMarque()
             );
             logger.info("DossierDefaut to save is\n {}", dossierDefaut);
             dossierDefautRepository.save(dossierDefaut);

@@ -24,16 +24,28 @@ public class Dossier {
     @Column(name = "C_PISTE")
     private Integer cPiste;
 
-     @Column(name="DATE_HEURE_ENREGISTREMENT")
+    @Column(name="DATE_HEURE_ENREGISTREMENT")
     private LocalDateTime dateHeureEnregistrement;
 
+    @Column(name = "CODE_MARQUE")
+    private String codeMarque;
 
-    public Dossier(Integer numDossier, String numChassis, String immatriculation, Integer cPiste, LocalDateTime dateHeureEnregistrement) {
+
+    public Dossier(Integer numDossier, String numChassis, String immatriculation, Integer cPiste, LocalDateTime dateHeureEnregistrement, String codeMarque) {
         this.numDossier = numDossier;
         this.numChassis = numChassis;
         this.immatriculation = immatriculation;
         this.cPiste = cPiste;
         this.dateHeureEnregistrement = dateHeureEnregistrement;
+        this.codeMarque = codeMarque;
+    }
+
+    public String getCodeMarque() {
+        return codeMarque;
+    }
+
+    public void setCodeMarque(String codeMarque) {
+        this.codeMarque = codeMarque;
     }
 
     public Integer getNumDossier() {

@@ -28,11 +28,11 @@ public class DossierController {
 
 
     @Operation(summary = "Get dossier by pisteId", description = "Authenticates a user and returns a JWT token")
-    @PreAuthorize("hasAnyRole('ADMIN','INSPECTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN','INSPECTEUR')")
     @GetMapping("/{pisteId}")
     public ResponseEntity<?> getDossierByPisteId(@PathVariable Integer pisteId) {
 
-        if (pisteId == null || pisteId < 0) {
+        if (pisteId == null || pisteId <= 0) {
             return ResponseEntity.badRequest().build();
         }
         List<DossierResponse> dossierResponses = dossierService.getDossierByPisteId(pisteId);
@@ -40,7 +40,7 @@ public class DossierController {
 
     }
 
-    @PreAuthorize("hasAnyRole('INSPECTOR')")
+    @PreAuthorize("hasAnyRole('INSPECTEUR')")
     @PostMapping("/{numDossier}")
     public ResponseEntity<?> submitDossierByPisteId(@RequestHeader("Authorization") String auth, @PathVariable Integer numDossier, @RequestBody DossierDefautsRequest dossierDefautsRequest) {
 
@@ -78,6 +78,9 @@ public class DossierController {
         }
         String matAgent = jwtUtils.extractIdUser(token);
         if (matAgent == null || matAgent.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+        if(dossierDefautsRequest.getCodeDefauts().isEmpty()){
             return ResponseEntity.badRequest().build();
         }
 
