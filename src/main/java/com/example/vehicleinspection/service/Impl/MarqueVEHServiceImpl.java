@@ -72,7 +72,7 @@ public class MarqueVEHServiceImpl implements MarqueVEHService {
             if(alt!=null) marqueResponseList.add(new MarqueResponse(alt.getLibelleAlteration(), entry.getValue()) );
             System.out.println("CodeDefaut: " + entry.getKey() + ", Count: " + entry.getValue());
         }
-        marqueResponseList.add(new MarqueResponse("Autres", (long) (codeDefautCounts.size()-top5CodeDefauts.size())));
+        if(top5CodeDefauts.size()==5) marqueResponseList.add(new MarqueResponse("Autres", (long) (codeDefautCounts.size()-top5CodeDefauts.size())));
         Map<String,Object> response=new HashMap<>();
         response.put("alterations",marqueResponseList);
         return response;
