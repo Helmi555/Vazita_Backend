@@ -30,6 +30,12 @@ public interface DossierDefautRepository extends JpaRepository<DossierDefaut, Do
     @Query("DELETE FROM DossierDefaut d WHERE d.id.nDossier = :nDossier")
     void deleteAllByNDossier(@Param("nDossier") Integer nDossier);
 
+    @Query("SELECT m FROM DossierDefaut m WHERE FUNCTION('TO_CHAR', m.dateControl, 'YYYY') = :year AND m.codeMarque = :codeMarque")
+    List<DossierDefaut> findByYearAndCodeMarque(@Param("year") String year,@Param("codeMarque") String codeMarque);
+
+    @Query("SELECT m FROM DossierDefaut m WHERE  m.codeMarque = :codeMarque")
+    List<DossierDefaut> findByCodeMarque(@Param("codeMarque") String codeMarque);
+
     @Query("SELECT m FROM DossierDefaut m WHERE FUNCTION('TO_CHAR', m.dateControl, 'YYYY') = :year")
     List<DossierDefaut> findByYear(@Param("year") String year);
 

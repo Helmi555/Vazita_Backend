@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface MarqueVEHRepository extends JpaRepository<MarqueVEH, String> {
@@ -16,4 +17,5 @@ public interface MarqueVEHRepository extends JpaRepository<MarqueVEH, String> {
 
     List<MarqueVEH> findAllByCdMarqueIn(List<String>codes);
 
+    Optional<MarqueVEH> findByDesiGL(String marque);
 }

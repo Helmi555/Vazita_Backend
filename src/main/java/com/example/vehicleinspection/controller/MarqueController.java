@@ -34,8 +34,12 @@ public class MarqueController {
 
     @PreAuthorize("hasAnyRole('ADMIN','ADJOINT')")
     @GetMapping("/bydossierdefaut")
-    public ResponseEntity<?> getMarquesByDossierDefaut(@RequestParam("year") String year){
-        return ResponseEntity.ok().body(Map.of("data",marqueService.getMarquesByDossierDefaut(year)));
+    public ResponseEntity<?> getMarquesByDossierDefaut(@RequestParam("year") String year,@RequestParam("marque") String marque){
+
+        if(marque == null || marque.isEmpty()) {
+           return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok().body(Map.of("data",marqueService.getMarquesByDossierDefaut(year,marque)));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','ADJOINT')")
@@ -46,7 +50,6 @@ public class MarqueController {
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.ok().body(Map.of("data", marqueService.searchMarques(query)));
-
     }
 
 }

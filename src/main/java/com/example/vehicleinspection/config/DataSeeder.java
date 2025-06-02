@@ -225,8 +225,6 @@ public class DataSeeder {
                         "  )'; " +
                         "EXCEPTION WHEN OTHERS THEN IF SQLCODE != -955 THEN RAISE; END IF; END;"
         );
-
-        // MARQUE_VEH
         jdbcTemplate.execute(
                 "BEGIN " +
                         "  EXECUTE IMMEDIATE 'CREATE TABLE MARQUE_VEH (" +

@@ -49,7 +49,6 @@ public class AuthServiceImpl implements AuthService {
         Group group=groupRepository.findById(user.getCodGrp()).orElseThrow(
                 ()->new ElementNotFoundException("Group not found")
         );
-
         CentreCVT centreCVT=centreCVTRepository.findById(user.getIdCentre()).orElseThrow(
                 ()->new ElementNotFoundException("Centre CVT not found")
         );
