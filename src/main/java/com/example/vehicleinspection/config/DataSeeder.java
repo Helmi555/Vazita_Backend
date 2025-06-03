@@ -4,7 +4,9 @@ import com.example.vehicleinspection.config.datasource.DataSourceManager;
 import com.example.vehicleinspection.config.datasource.RoutingDataSourceContext;
 import com.example.vehicleinspection.model.*;
 import com.example.vehicleinspection.model.enums.Role;
+import com.example.vehicleinspection.model.keys.AlterationId;
 import com.example.vehicleinspection.model.keys.DossierDefautId;
+import com.example.vehicleinspection.model.keys.PointDefautId;
 import com.example.vehicleinspection.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -179,23 +181,27 @@ public class DataSeeder {
         jdbcTemplate.execute(
                 "BEGIN " +
                         "  EXECUTE IMMEDIATE 'CREATE TABLE POINTS_DEFAUTS (" +
-                        "    CODE_POINT NUMBER PRIMARY KEY, " +
                         "    CODE_CHAPITRE NUMBER, " +
-                        "    LIBELLE_POINT VARCHAR2(200)" +
+                        "    CODE_POINT NUMBER, " +
+                        "    LIBELLE_POINT VARCHAR2(200), " +
+                        "    PRIMARY KEY (CODE_CHAPITRE, CODE_POINT)" +
                         "  )'; " +
                         "EXCEPTION WHEN OTHERS THEN IF SQLCODE != -955 THEN RAISE; END IF; END;"
         );
+
         // ALTERATIONS
         jdbcTemplate.execute(
                 "BEGIN " +
                         "  EXECUTE IMMEDIATE 'CREATE TABLE ALTERATIONS (" +
-                        "    CODE_ALTERATION NUMBER PRIMARY KEY, " +
                         "    CODE_CHAPITRE NUMBER, " +
                         "    CODE_POINT NUMBER, " +
-                        "    LIBELLE_ALTERATION VARCHAR2(200)" +
+                        "    CODE_ALTERATION NUMBER, " +
+                        "    LIBELLE_ALTERATION VARCHAR2(200), " +
+                        "    PRIMARY KEY (CODE_CHAPITRE, CODE_POINT, CODE_ALTERATION)" +
                         "  )'; " +
                         "EXCEPTION WHEN OTHERS THEN IF SQLCODE != -955 THEN RAISE; END IF; END;"
         );
+
         // MES_DOSSIERS
         jdbcTemplate.execute(
                 "BEGIN " +
@@ -257,31 +263,78 @@ public class DataSeeder {
     private void seedPointsDefauts() {
         if (pointDefautRepository.count() == 0) {
             pointDefautRepository.saveAll(List.of(
-                    new PointDefaut(1, 0, "IDENTIFIANTS DU VEHICULE"),
-                    new PointDefaut(2, 0, "PLAQUE DU CONSTRUCTEUR"),
-                    new PointDefaut(3, 0, "IDENTIFIANTS DU VEHICULE"),
-                    new PointDefaut(4, 0, "PLAQUE D'IMMATRICULATION"),
-                    new PointDefaut(5, 1, "FEUX DE ROUTE"),
-                    new PointDefaut(6, 1, "FEUX DE CROISEMENT"),
-                    new PointDefaut(7, 1, "FEUX DE POSITION AVANT ET ARRIERE"),
-                    new PointDefaut(8, 1, "FEUX DE CHANGEMENT DE DIRECTION"),
-                    new PointDefaut(9, 1, "FEUX STOP")
-
+                    new PointDefaut(new PointDefautId(0, 1), "IDENTIFIANTS DU VEHICULE"),
+                    new PointDefaut(new PointDefautId(0, 2), "PLAQUE CONSTRUCTEUR"),
+                    new PointDefaut(new PointDefautId(1, 1), "SYSTÈME DE FREINAGE"),
+                    new PointDefaut(new PointDefautId(1, 2), "FEUX DE FREIN"),
+                    new PointDefaut(new PointDefautId(2, 1), "DIRECTION ASSISTÉE"),
+                    new PointDefaut(new PointDefautId(2, 2), "COLONNE DE DIRECTION"),
+                    new PointDefaut(new PointDefautId(3, 1), "CLIGNOTANTS"),
+                    new PointDefaut(new PointDefautId(3, 2), "FEUX DE POSITION"),
+                    new PointDefaut(new PointDefautId(4, 1), "PNEUS"),
+                    new PointDefaut(new PointDefautId(4, 2), "ROUES"),
+                    new PointDefaut(new PointDefautId(5, 1), "RETROVISEURS"),
+                    new PointDefaut(new PointDefautId(5, 2), "PARE-BRISE"),
+                    new PointDefaut(new PointDefautId(6, 1), "CEINTURE DE SÉCURITÉ"),
+                    new PointDefaut(new PointDefautId(6, 2), "AIRBAGS"),
+                    new PointDefaut(new PointDefautId(7, 1), "ÉMISSIONS DE GAZ"),
+                    new PointDefaut(new PointDefautId(7, 2), "SONDE LAMBDA"),
+                    new PointDefaut(new PointDefautId(8, 1), "BOÎTE DE VITESSE"),
+                    new PointDefaut(new PointDefautId(8, 2), "EMBRAYAGE"),
+                    new PointDefaut(new PointDefautId(9, 1), "CARROSSERIE"),
+                    new PointDefaut(new PointDefautId(9, 2), "PORTIÈRES")
             ));
         }
     }
+
+
 
     private void seedAlterations() {
         if (alterationRepository.count() == 0) {
             alterationRepository.saveAll(List.of(
-                    new Alteration(1, 0, 3, "Transformation notable non autorisée"),
-                    new Alteration(5, 0, 2, "Non conforme (couleur, dimension)"),
-                    new Alteration(2, 0, 4, "Portant un N° d'immatriculation faux"),
-                    new Alteration(3, 0, 4, "Ecriture Illisible"),
-                    new Alteration(4, 1, 0, "Mauvaise fixation")
+                    new Alteration(new AlterationId(0, 1, 1), "Numéro de série illisible"),
+                    new Alteration(new AlterationId(0, 1, 2), "Numéro de série falsifié"),
+                    new Alteration(new AlterationId(0, 2, 1), "Plaque constructeur manquante"),
+
+                    new Alteration(new AlterationId(1, 1, 1), "Fuite de liquide de frein"),
+                    new Alteration(new AlterationId(1, 2, 1), "Feux de frein non fonctionnels"),
+                    new Alteration(new AlterationId(1, 2, 2), "Feux de frein cassés"),
+
+                    new Alteration(new AlterationId(2, 1, 1), "Direction assistée inopérante"),
+                    new Alteration(new AlterationId(2, 2, 1), "Jeu excessif dans la direction"),
+                    new Alteration(new AlterationId(2, 2, 2), "Bruit anormal"),
+
+                    new Alteration(new AlterationId(3, 1, 1), "Clignotants non fonctionnels"),
+                    new Alteration(new AlterationId(3, 1, 2), "Clignotants mal fixés"),
+                    new Alteration(new AlterationId(3, 2, 1), "Feux de position non conformes"),
+
+                    new Alteration(new AlterationId(4, 1, 1), "Usure anormale du pneu"),
+                    new Alteration(new AlterationId(4, 1, 2), "Pneu non homologué"),
+                    new Alteration(new AlterationId(4, 2, 1), "Roues mal fixées"),
+
+                    new Alteration(new AlterationId(5, 1, 1), "Rétroviseur cassé"),
+                    new Alteration(new AlterationId(5, 2, 1), "Pare-brise fissuré"),
+                    new Alteration(new AlterationId(5, 2, 2), "Pare-brise non homologué"),
+
+                    new Alteration(new AlterationId(6, 1, 1), "Ceinture déchirée"),
+                    new Alteration(new AlterationId(6, 1, 2), "Boucle non fonctionnelle"),
+                    new Alteration(new AlterationId(6, 2, 1), "Airbag désactivé"),
+
+                    new Alteration(new AlterationId(7, 1, 1), "Émissions excessives"),
+                    new Alteration(new AlterationId(7, 2, 1), "Sonde lambda défectueuse"),
+
+                    new Alteration(new AlterationId(8, 1, 1), "Vitesse ne passe pas"),
+                    new Alteration(new AlterationId(8, 1, 2), "Boîte de vitesse bruyante"),
+                    new Alteration(new AlterationId(8, 2, 1), "Patinage de l'embrayage"),
+
+                    new Alteration(new AlterationId(9, 1, 1), "Carrosserie rouillée"),
+                    new Alteration(new AlterationId(9, 1, 2), "Déformation majeure"),
+                    new Alteration(new AlterationId(9, 2, 1), "Portière mal fermée")
             ));
         }
     }
+
+
 
     private void seedDossiers() {
         if (dossierRepository.count() == 0) {

@@ -53,10 +53,10 @@ public class AlterationResponse {
 
     public static AlterationResponse mapToAlterationResponse(Alteration alteration) {
         AlterationResponse response = new AlterationResponse();
-        response.setCodeAlteration(alteration.getCodeAlteration());
+        response.setCodeAlteration(alteration.getAlterationId().getCodeAlteration());
         response.setLibelleAlteration(alteration.getLibelleAlteration());
-        response.setCodePoint(alteration.getCodePoint());
-        response.setCodeChapitre(alteration.getCodeChapitre());
+        response.setCodePoint(alteration.getAlterationId().getCodePoint());
+        response.setCodeChapitre(alteration.getAlterationId().getCodeChapitre());
         return response;
     }
 

@@ -5,6 +5,7 @@ import com.example.vehicleinspection.dto.response.DossierResponse;
 import com.example.vehicleinspection.model.Alteration;
 import com.example.vehicleinspection.model.Dossier;
 import com.example.vehicleinspection.model.DossierDefaut;
+import com.example.vehicleinspection.model.keys.AlterationId;
 import com.example.vehicleinspection.model.keys.DossierDefautId;
 import com.example.vehicleinspection.repository.*;
 import com.example.vehicleinspection.service.DossierService;
@@ -65,12 +66,23 @@ public class DossierServiceImpl implements DossierService {
         if(dossier==null){
             throw new UsernameNotFoundException("Dossier not found");
         }
+        logger.info("DossierDefauts are : {}", dossierDefautsRequest.getCodeDefauts());
         LocalDate dateCtrl=LocalDate.now();
-        List<Alteration> alterations=alterationRepository.findAllById(dossierDefautsRequest.getCodeAlterations());
+        List<AlterationId> codeAlterationsId = dossierDefautsRequest.getCodeDefauts().stream()
+                .map(code -> {
+                    int chapitre = Integer.parseInt(code.substring(0,1));
+                    int point = Integer.parseInt(code.substring(1, 2));
+                    int alteration = Integer.parseInt(code.substring(2, 3));
+                    return new AlterationId(chapitre, point, alteration);
+                })
+                .toList();
+        logger.info("Code alterationsId are : {}", codeAlterationsId);
+
+        List<Alteration> alterations=alterationRepository.findAllById(codeAlterationsId);
         logger.info("Alterations to save are\n {}",alterations);
 
         for(Alteration alteration:alterations){
-            String codeDef=alteration.getCodeChapitre().toString()+alteration.getCodePoint().toString()+ alteration.getCodeAlteration().toString();
+            String codeDef=alteration.getAlterationId().getCodeChapitre().toString()+alteration.getAlterationId().getCodePoint().toString()+ alteration.getAlterationId().getCodeAlteration().toString();
             DossierDefaut dossierDefaut=new DossierDefaut(
                    new DossierDefautId(numDossier,codeDef),
                     numCentre,
@@ -95,7 +107,16 @@ public class DossierServiceImpl implements DossierService {
         LocalDate dateCtrl = LocalDate.now();
         List<Integer> codeAlterations=dossierDefautsRequest.getCodeDefauts().stream().map(s->s.substring(2)).map(Integer::valueOf).toList();
         logger.info("Les code alterations are : {}", codeAlterations);
-        List<Alteration> alterations=alterationRepository.findAllById(codeAlterations);
+        List<AlterationId> codeAlterationsId = dossierDefautsRequest.getCodeDefauts().stream()
+                .map(code -> {
+                    int chapitre = Integer.parseInt(code.substring(0,1));
+                    int point = Integer.parseInt(code.substring(1, 2));
+                    int alteration = Integer.parseInt(code.substring(2, 3));
+                    return new AlterationId(chapitre, point, alteration);
+                })
+                .toList();
+
+        List<Alteration> alterations=alterationRepository.findAllById(codeAlterationsId);
         logger.info("Alterations to update are\n {} and the old are \n{}", alterations,dossierDefautsRequest.getCodeDefauts());
 
 
@@ -109,9 +130,9 @@ public class DossierServiceImpl implements DossierService {
         entityManager.clear();
         // Create and save new DossierDefaut records
         for (Alteration alteration : alterations) {
-            String codeDef = alteration.getCodeChapitre().toString() +
-                    alteration.getCodePoint().toString() +
-                    alteration.getCodeAlteration().toString();
+            String codeDef = alteration.getAlterationId().getCodeChapitre().toString() +
+                    alteration.getAlterationId().getCodePoint().toString() +
+                    alteration.getAlterationId().getCodeAlteration().toString();
             DossierDefaut dossierDefaut = new DossierDefaut(
                     new DossierDefautId(numDossier,codeDef),
                     numCentre,

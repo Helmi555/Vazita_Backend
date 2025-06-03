@@ -32,7 +32,7 @@ public class DossierController {
     @GetMapping("/{pisteId}")
     public ResponseEntity<?> getDossierByPisteId(@PathVariable Integer pisteId) {
 
-        if (pisteId == null || pisteId <= 0) {
+        if (pisteId == null || pisteId < 0) {
             return ResponseEntity.badRequest().build();
         }
         List<DossierResponse> dossierResponses = dossierService.getDossierByPisteId(pisteId);

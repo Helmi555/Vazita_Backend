@@ -1,47 +1,31 @@
 package com.example.vehicleinspection.model;
 
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.example.vehicleinspection.model.keys.PointDefautId;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "POINTS_DEFAUTS")
 public class PointDefaut {
 
-    @Id
-    @Column(name="CODE_POINT")
-    private Integer codePoint;
-
-    @Column(name="CODE_CHAPITRE")
-    private Integer codeChapitre;
+    @EmbeddedId
+    @AttributeOverrides({
+            @AttributeOverride(name = "codeChapitre", column = @Column(name = "CODE_CHAPITRE")),
+            @AttributeOverride(name = "codePoint", column = @Column(name = "CODE_POINT"))
+    })
+    private PointDefautId id;
 
     @Column(name="LIBELLE_POINT")
     private String libellePoint;
 
     public PointDefaut() {}
 
-    public PointDefaut(Integer codePoint, Integer codeChapitre, String libellePoint) {
-        this.codePoint = codePoint;
-        this.codeChapitre = codeChapitre;
-        this.libellePoint = libellePoint;
+    public PointDefautId getId() {
+        return id;
     }
 
-    public Integer getCodePoint() {
-        return codePoint;
-    }
-
-    public void setCodePoint(Integer codePoint) {
-        this.codePoint = codePoint;
-    }
-
-    public Integer getCodeChapitre() {
-        return codeChapitre;
-    }
-
-    public void setCodeChapitre(Integer codeChapitre) {
-        this.codeChapitre = codeChapitre;
+    public void setId(PointDefautId id) {
+        this.id = id;
     }
 
     public String getLibellePoint() {
@@ -49,6 +33,11 @@ public class PointDefaut {
     }
 
     public void setLibellePoint(String libellePoint) {
+        this.libellePoint = libellePoint;
+    }
+
+    public PointDefaut(PointDefautId id, String libellePoint) {
+        this.id = id;
         this.libellePoint = libellePoint;
     }
 }

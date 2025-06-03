@@ -5,7 +5,6 @@ import java.util.List;
 
 public class DossierDefautsRequest {
 
-    private List<Integer> codeAlterations=new ArrayList<>();
     private List<String> codeDefauts=new ArrayList<>();
 
     public List<String> getCodeDefauts() {
@@ -16,19 +15,19 @@ public class DossierDefautsRequest {
         this.codeDefauts = codeDefauts;
     }
 
-    public List<Integer> getCodeAlterations() {
-        return codeAlterations;
-    }
 
-    public void setCodeAlterations(List<Integer> codeAlterations) {
-        this.codeAlterations = codeAlterations;
-    }
+    public DossierDefautsRequest(List<String> codeDefauts) {
 
-    public DossierDefautsRequest(List<Integer> codeAlterations, List<String> codeDefauts) {
-        this.codeAlterations = codeAlterations;
         this.codeDefauts = codeDefauts;
     }
 
     public DossierDefautsRequest() {
+    }
+
+    @Override
+    public String toString() {
+        return "DossierDefautsRequest{" +
+                "codeDefauts=" + codeDefauts +
+                '}';
     }
 }

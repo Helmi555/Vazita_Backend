@@ -58,8 +58,8 @@ public class PointDefautResponse {
 
     public static PointDefautResponse mapToPointDefautResponse(PointDefaut pointDefaut, List<AlterationResponse> alterations) {
         PointDefautResponse response = new PointDefautResponse();
-        response.setCodePoint(pointDefaut.getCodePoint());
-        response.setCodeChapitre(pointDefaut.getCodeChapitre());
+        response.setCodePoint(pointDefaut.getId().getCodePoint());
+        response.setCodeChapitre(pointDefaut.getId().getCodeChapitre());
         response.setLibellePoint(pointDefaut.getLibellePoint());
         response.setAlterationResponses(alterations);
         return response;

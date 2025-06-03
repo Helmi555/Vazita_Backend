@@ -1,51 +1,28 @@
 package com.example.vehicleinspection.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.example.vehicleinspection.model.keys.AlterationId;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "ALTERATIONS")
 public class Alteration {
     @Id
-    @Column(name="CODE_ALTERATION")
-    private Integer codeAlteration;
-
-
-    @Column(name="CODE_CHAPITRE")
-    private Integer codeChapitre;
-
-
-    @Column(name="CODE_POINT")
-    private Integer codePoint;
-
+    @AttributeOverrides({
+            @AttributeOverride(name = "codeChapitre", column = @Column(name = "CODE_CHAPITRE")),
+            @AttributeOverride(name = "codePoint", column = @Column(name = "CODE_POINT")),
+            @AttributeOverride(name = "codeAlteration", column = @Column(name = "CODE_ALTERATION"))
+    })
+    private AlterationId alterationId;
 
     @Column(name="LIBELLE_ALTERATION")
     private String libelleAlteration;
 
-    public Integer getCodeAlteration() {
-        return codeAlteration;
+    public AlterationId getAlterationId() {
+        return alterationId;
     }
 
-    public void setCodeAlteration(Integer codeAlteration) {
-        this.codeAlteration = codeAlteration;
-    }
-
-    public Integer getCodeChapitre() {
-        return codeChapitre;
-    }
-
-    public void setCodeChapitre(Integer codeChapitre) {
-        this.codeChapitre = codeChapitre;
-    }
-
-    public Integer getCodePoint() {
-        return codePoint;
-    }
-
-    public void setCodePoint(Integer codePoint) {
-        this.codePoint = codePoint;
+    public void setAlterationId(AlterationId alterationId) {
+        this.alterationId = alterationId;
     }
 
     public String getLibelleAlteration() {
@@ -56,10 +33,8 @@ public class Alteration {
         this.libelleAlteration = libelleAlteration;
     }
 
-    public Alteration(Integer codeAlteration, Integer codeChapitre, Integer codePoint, String libelleAlteration) {
-        this.codeAlteration = codeAlteration;
-        this.codeChapitre = codeChapitre;
-        this.codePoint = codePoint;
+    public Alteration(AlterationId alterationId, String libelleAlteration) {
+        this.alterationId = alterationId;
         this.libelleAlteration = libelleAlteration;
     }
 
@@ -69,9 +44,7 @@ public class Alteration {
     @Override
     public String toString() {
         return "Alteration{" +
-                "codeAlteration=" + codeAlteration +
-                ", codeChapitre=" + codeChapitre +
-                ", codePoint=" + codePoint +
+                "alterationId=" + alterationId +
                 ", libelleAlteration='" + libelleAlteration + '\'' +
                 '}';
     }

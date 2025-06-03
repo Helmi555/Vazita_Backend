@@ -40,24 +40,29 @@ public class ChapitreServiceImpl implements ChapitreService {
         List<Chapitre> chapitres = chapitreRepository.findAll();
         List<PointDefaut> pointDefauts = pointDefautRepository.findAll();
         List<Alteration> alterations = alterationRepository.findAll();
-        logger.info("\nIl y a {} chapitres \n{} points \n{} alterations",chapitres.size(),pointDefauts.size(),alterations.size());
 
-        Map<Integer, List<Alteration>> alterationsByPointId = alterations.stream()
-                .collect(Collectors.groupingBy(Alteration::getCodePoint));
+        logger.info("\nIl y a {} chapitres \n{} points \n{} alterations",
+                chapitres.size(), pointDefauts.size(), alterations.size());
 
-        Map<Integer, List<PointDefaut>> pointDefautsByChapitreId = pointDefauts.stream()
-                .collect(Collectors.groupingBy(PointDefaut::getCodeChapitre));
+        // Group alterations by (codeChapitre, codePoint)
+        Map<String, List<Alteration>> alterationsGrouped = alterations.stream()
+                .collect(Collectors.groupingBy(a ->
+                        a.getAlterationId().getCodeChapitre() + "-" + a.getAlterationId().getCodePoint()
+                ));
 
-        // Build chapitre response
+        // Group pointDefauts by codeChapitre
+        Map<Integer, List<PointDefaut>> pointsByChapitre = pointDefauts.stream()
+                .collect(Collectors.groupingBy(p -> p.getId().getCodeChapitre()));
+
         List<ChapitreResponse> chapitreResponses = new ArrayList<>();
 
         for (Chapitre chapitre : chapitres) {
-            List<PointDefaut> chapterPoints = pointDefautsByChapitreId
-                    .getOrDefault(chapitre.getCodeChapitre(), new ArrayList<>());
+            List<PointDefaut> chapterPoints = pointsByChapitre.getOrDefault(
+                    chapitre.getCodeChapitre(), new ArrayList<>());
 
             List<PointDefautResponse> pointResponses = chapterPoints.stream().map(point -> {
-                List<Alteration> pointAlterations = alterationsByPointId
-                        .getOrDefault(point.getCodePoint(), new ArrayList<>());
+                String key = point.getId().getCodeChapitre() + "-" + point.getId().getCodePoint();
+                List<Alteration> pointAlterations = alterationsGrouped.getOrDefault(key, new ArrayList<>());
 
                 List<AlterationResponse> alterationResponses = pointAlterations.stream()
                         .map(AlterationResponse::mapToAlterationResponse)
@@ -66,8 +71,7 @@ public class ChapitreServiceImpl implements ChapitreService {
                 return PointDefautResponse.mapToPointDefautResponse(point, alterationResponses);
             }).collect(Collectors.toList());
 
-            ChapitreResponse chapitreResponse = ChapitreResponse.mapToChapitreResponse(chapitre, pointResponses);
-            chapitreResponses.add(chapitreResponse);
+            chapitreResponses.add(ChapitreResponse.mapToChapitreResponse(chapitre, pointResponses));
         }
 
         return chapitreResponses;
